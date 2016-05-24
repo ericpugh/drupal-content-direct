@@ -1,0 +1,11 @@
+content_direct.settings:
+  path: /admin/config/content_direct
+  defaults:
+    _form: '\Drupal\content_direct\Form\ContentDirectSettingsForm'
+    _title: 'Content Direct Settings'
+  requirements:
+    _permission: 'administer_content_direct'
+content_direct.help:
+  path: 'admin/help/content_direct'
+  requirements:
+    _permission: 'administer_content_direct'

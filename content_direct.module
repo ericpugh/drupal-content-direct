@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Pushes content from one site to another using RESTful web services.
+ */
+
+
+/**
+ * Implements hook_help().
+ */
+function content_direct_help($route_name) {
+  switch ($route_name) {
+    case 'content_direct.help':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('This is the help docs for Content Direct, see <a href="!content_direct-module">the online documentation</a></p>');
+      return $output;
+  }
+}
