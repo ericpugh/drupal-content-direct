@@ -18,3 +18,25 @@ function content_direct_help($route_name) {
       return $output;
   }
 }
+
+/**
+ * Implements hook_node_insert().
+ */
+function content_direct_node_insert($node) {
+  $pusher = \Drupal::service('content_direct.content_pusher');
+  // @TODO: move this to the service
+  $data = \Drupal::service('serializer')->serialize($node, 'json');
+  dpm('Insert Hook');
+  dpm($data);
+  $pusher->request('post', 'node', array('body' => $data));
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function content_direct_node_update($node) {
+  $data = \Drupal::service('serializer')->serialize($node, 'json');
+  dpm('Update Hook');
+  dpm($data);
+
+}
