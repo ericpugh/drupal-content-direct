@@ -1,8 +1,8 @@
 name: Content Direct
 description: 'Pushes content from one site to another using RESTful web services.'
 core: 8.x
-package: Web services
 type: module
+package: Web services
 configure: content_direct.settings
 dependencies:
   - rest

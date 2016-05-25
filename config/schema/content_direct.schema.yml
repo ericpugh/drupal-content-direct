@@ -1,0 +1,10 @@
+content_direct.settings:
+  type: config_object
+  label: 'Content Direct Settings'
+  mapping:
+    host:
+      type: string
+      label: 'Remote Host'
+    port:
+      type: string
+      label: 'Port'

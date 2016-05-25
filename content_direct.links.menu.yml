@@ -1,0 +1,5 @@
+content_direct.settings:
+  title: 'Content Direct'
+  description: 'Configure and customize the Content Direct module.'
+  route_name: content_direct.settings
+  parent: system.admin_config_services
