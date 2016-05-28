@@ -126,13 +126,14 @@ class ContentPusher {
     $settings = $this->configFactory->get('content_direct.settings');
     // @TODO: Handle auth, setting the correct endpoint etc.
     $options = array(
-      'base_uri' => 'http://' . $settings->get('host'),
+      'base_uri' =>  $settings->get('protocol') . '://' . $settings->get('host'),
       'timeout' => 5,
       'connect_timeout' => 5,
-//      'auth' => array(
-//        $settings->get(''),
-//        $settings->get(''),
-//      ),
+      'auth' => array(
+        $settings->get('username'),
+        $settings->get('password'),
+      ),
+      // @TODO: get format from settings
       'headers' => array(
         'Content-Type' => 'application/json',
         'Accept' => 'application/json',
@@ -157,13 +158,12 @@ class ContentPusher {
       }
     }
     catch (RequestException $exception) {
-      $this->loggerFactory->get('usasearch')
+      $this->loggerFactory->get('content_pusher')
         ->error('Content Direct Error, Code: %code, Message: %message, Body: %body',
           array(
             '%code' => $exception->getCode(),
             '%message' => $exception->getMessage(),
-            '%body' => '<pre>' . Html::escape($exception->getResponse()
-                ->getBody()) . '</pre>',
+            '%body' => '<pre>' . Html::escape($exception->getResponse()->getBody()) . '</pre>',
           ));
       return FALSE;
     }

@@ -25,10 +25,16 @@ function content_direct_help($route_name) {
 function content_direct_node_insert($node) {
   $pusher = \Drupal::service('content_direct.content_pusher');
   // @TODO: move this to the service
-  $data = \Drupal::service('serializer')->serialize($node, 'json');
+  $serializer = \Drupal::service('serializer');
+  $data = $serializer->serialize($node, 'json');
+  $test_data = '{
+    "type":[{"target_id":"article"}],
+  "title":[{"value":"Saturday test"}],
+  "body":[{"value":"this is hardcoded test data"}]
+}';
   dpm('Insert Hook');
-  dpm($data);
-  $pusher->request('post', 'node', array('body' => $data));
+  //dpm($data);
+  $pusher->request('post', 'entity/node', array('body' => $test_data));
 }
 
 /**
@@ -38,5 +44,8 @@ function content_direct_node_update($node) {
   $data = \Drupal::service('serializer')->serialize($node, 'json');
   dpm('Update Hook');
   dpm($data);
+  $pusher = \Drupal::service('content_direct.content_pusher');
+  $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
+
 
 }

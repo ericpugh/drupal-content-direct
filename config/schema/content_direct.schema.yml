@@ -2,9 +2,18 @@ content_direct.settings:
   type: config_object
   label: 'Content Direct Settings'
   mapping:
+    protocol:
+      type: string
+      label: 'Protocol'
     host:
       type: string
       label: 'Remote Host'
     port:
       type: string
       label: 'Port'
+    username:
+      type: string
+      label: 'Username'
+    password:
+      type: string
+      label: 'Password'
