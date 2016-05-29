@@ -7,3 +7,4 @@ configure: content_direct.settings
 dependencies:
   - rest
   - serialization
+  - hal

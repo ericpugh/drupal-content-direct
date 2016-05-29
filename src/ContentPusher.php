@@ -124,7 +124,8 @@ class ContentPusher {
   public function request($method, $uri, $request_options = array()) {
     $method = strtolower($method);
     $settings = $this->configFactory->get('content_direct.settings');
-    // @TODO: Handle auth, setting the correct endpoint etc.
+    $format = $settings->get('format');
+    $header_format = 'application/' . str_replace('_', '+', $format);
     $options = array(
       'base_uri' =>  $settings->get('protocol') . '://' . $settings->get('host'),
       'timeout' => 5,
@@ -133,16 +134,17 @@ class ContentPusher {
         $settings->get('username'),
         $settings->get('password'),
       ),
-      // @TODO: get format from settings
       'headers' => array(
-        'Content-Type' => 'application/json',
-        'Accept' => 'application/json',
+        'Content-Type' => $header_format,
+        'Accept' => $header_format,
+          'X-CSRF-Token' => '',
       ),
     );
     if (!empty($request_options)) {
       $options = array_merge($options, $request_options);
     }
     try {
+      $uri = $uri . '?_format=' . $format;
       $response = $this->httpClient->request($method, $uri, $options);
       if ($response) {
         $this->loggerFactory->get('content_direct')

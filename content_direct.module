@@ -26,15 +26,15 @@ function content_direct_node_insert($node) {
   $pusher = \Drupal::service('content_direct.content_pusher');
   // @TODO: move this to the service
   $serializer = \Drupal::service('serializer');
-  $data = $serializer->serialize($node, 'json');
-  $test_data = '{
-    "type":[{"target_id":"article"}],
-  "title":[{"value":"Saturday test"}],
-  "body":[{"value":"this is hardcoded test data"}]
-}';
+  $data = $serializer->serialize($node, 'hal_json');
+//  $test_data = '{
+//    "type":[{"target_id":"article"}],
+//  "title":[{"value":"Saturday test"}],
+//  "body":[{"value":"this is hardcoded test data"}]
+//}';
   dpm('Insert Hook');
-  //dpm($data);
-  $pusher->request('post', 'entity/node', array('body' => $test_data));
+  dpm($data);
+  $pusher->request('post', 'entity/node', array('body' => $data));
 }
 
 /**

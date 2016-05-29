@@ -1,2 +1,3 @@
 protocol: 'https'
 port: '443'
+format: 'hal_json'

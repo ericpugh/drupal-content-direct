@@ -38,6 +38,7 @@ class ContentDirectSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Remote Site'),
       '#open' => TRUE,
+        '#description' => $this->t('Note: the remote server\'s REST settings must reflect these settings.'),
     );
     $form['remote_site']['protocol'] = [
         '#type' => 'select',
@@ -65,11 +66,22 @@ class ContentDirectSettingsForm extends ConfigFormBase {
       '#default_value' => $settings->get('port'),
       '#description' => $this->t('Port used by remote site\'s web services.'),
     ];
+    $form['remote_site']['format'] = [
+        '#type' => 'select',
+        '#title' => $this->t('Format'),
+        '#options' => [
+            'json' => 'JSON',
+            'hal_json' => 'HAL+JSON',
+        ],
+        '#required' => TRUE,
+        '#default_value' => $settings->get('format'),
+    ];
 
     $form['basic_authentication'] = array(
         '#type' => 'details',
         '#title' => $this->t('Baisic Authentication'),
         '#open' => TRUE,
+        '#description' => $this->t('Note: the remote server\'s REST settings must reflect these settings.'),
     );
     $form['basic_authentication']['username'] = [
         '#type' => 'textfield',
@@ -104,6 +116,7 @@ class ContentDirectSettingsForm extends ConfigFormBase {
         ->set('protocol', $form_state->getValue('protocol'))
         ->set('host', $form_state->getValue('host'))
         ->set('port', $form_state->getValue('port'))
+        ->set('format', $form_state->getValue('format'))
         ->set('username', $form_state->getValue('username'))
         ->set('password', $form_state->getValue('password'))
       ->save();
