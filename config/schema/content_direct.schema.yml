@@ -11,9 +11,15 @@ content_direct.settings:
     port:
       type: string
       label: 'Port'
+    format:
+      type: string
+      label: 'Format'
     username:
       type: string
       label: 'Username'
     password:
       type: string
       label: 'Password'
+#    token:
+#      type: string
+#      label: 'CSRF Token'

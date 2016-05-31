@@ -101,6 +101,15 @@ class ContentDirectSettingsForm extends ConfigFormBase {
         '#default_value' => $settings->get('password'),
         '#description' => $this->t('Password.'),
     ];
+//    $form['basic_authentication']['token'] = [
+//        '#type' => 'textfield',
+//        '#title' => $this->t('Token'),
+//        '#size' => 60,
+//        '#maxlength' => 128,
+//        '#required' => FALSE,
+//        '#default_value' => $settings->get('token'),
+//        '#description' => $this->t('CSRF Token. This can be retreived from the endpoint "rest/service/token"'),
+//    ];
 
     // @TODO: add options to select which types of content to push
 
@@ -119,6 +128,7 @@ class ContentDirectSettingsForm extends ConfigFormBase {
         ->set('format', $form_state->getValue('format'))
         ->set('username', $form_state->getValue('username'))
         ->set('password', $form_state->getValue('password'))
+        ->set('token', $form_state->getValue('token'))
       ->save();
   }
 

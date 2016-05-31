@@ -8,3 +8,4 @@ dependencies:
   - rest
   - serialization
   - hal
+  - basic_auth
