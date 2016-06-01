@@ -211,7 +211,7 @@ class ContentPusher {
               '%options' => '<pre>' . Html::escape(print_r($options, TRUE)) . '</pre>',
               '%response_code' => $response->getStatusCode(),
             ));
-        drupal_set_message(t('Content Direct Deployed'), 'status', FALSE);
+        drupal_set_message(t('Content Direct ' . strtoupper($method) . ' request fired'), 'status', FALSE);
         return TRUE;
       }
     }
