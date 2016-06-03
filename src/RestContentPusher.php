@@ -12,12 +12,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use Drupal\node\Entity\Node;
+use Drupal\taxonomy\Entity\Term;
 use Drupal\Component\Utility\Html;
 
 /**
  * Content Pusher service.
  */
-class ContentPusher {
+class RestContentPusher implements ContentPusherInterface{
 
   public $ignore_fields = array(
       'created',
@@ -119,7 +120,8 @@ class ContentPusher {
    * @return string
    *   Return a json string.
    */
-  public function getData(Node $node) {
+  public function getNodeData(Node $node) {
+    //@TODO: make a head request to determine if entity references exist on remote site?
     $full_data = $this->serializer->serialize($node, $this->settings->get('format'), ['plugin_id' => 'entity']);
     $clean_data = array();
     foreach(json_decode($full_data) as $k => $v) {
@@ -130,7 +132,61 @@ class ContentPusher {
     return json_encode($clean_data);
   }
 
-  /**
+  public function getTerms(Node $node) {
+//    $field_definitions = $node->getFieldDefinition('field_tags');
+//    return $field_definitions;
+    $terms = array();
+    $serialized = $this->serializer->serialize($node, $this->settings->get('format'), ['plugin_id' => 'entity']);
+    foreach(json_decode($serialized) as $field) {
+      foreach($field as $field_item) {
+        if($field_item->target_type == 'taxonomy_term') {
+          array_push($terms, Term::load($field_item->target_id));
+        }
+      }
+    }
+    return !empty($terms) ? $terms : FALSE;
+  }
+
+  public function remoteEntityExists($entity_type, $entity_id) {
+    switch (strtolower($entity_type)) {
+      case 'taxonomy_term':
+          $uri = is_numeric($entity_id) ? 'taxonomy/term/' . $entity_id : NULL;
+        break;
+      case 'node':
+        $uri = is_numeric($entity_id) ? 'node/' . $entity_id : NULL;
+        break;
+      case 'taxonomy_vocabulary':
+        // Note: taxonomy_vocabulary uses a machine name rather than numeric id form $entity_id
+        $uri = 'entity/taxonomy_vocabulary/' . $entity_id;
+        break;
+      default:
+        return FALSE;
+    }
+
+    $format = $this->settings->get('format');
+    $header_format = 'application/' . str_replace('_', '+', $format);
+    $options = array(
+        'base_uri' =>  $this->settings->get('protocol') . '://' . $this->settings->get('host'),
+        'timeout' => 5,
+        'connect_timeout' => 5,
+    );
+    try {
+      $uri = $uri . '?_format=' . $format;
+      dpm('made HEAD request to ' . $uri);
+      $response = $this->httpClient->request('head', $uri, $options);
+      if ($response) {
+        dpm($response->getBody());
+        return TRUE;
+      }
+    }
+    catch (RequestException $exception) {
+      return FALSE;
+    }
+
+
+  }
+
+    /**
    * Make an HTTP Request to retrieve the remote CSRF token.
    *
    * @return string
@@ -198,8 +254,8 @@ class ContentPusher {
     if (!empty($request_options)) {
       $options = array_merge($options, $request_options);
     }
+    // @TODO: handle taxonomy terms that don't exist on remote
     try {
-      // @TODO: handle taxonomy terms that don't exist on remote
       $uri = $uri . '?_format=' . $format;
       $response = $this->httpClient->request($method, $uri, $options);
       if ($response) {
@@ -211,7 +267,7 @@ class ContentPusher {
               '%options' => '<pre>' . Html::escape(print_r($options, TRUE)) . '</pre>',
               '%response_code' => $response->getStatusCode(),
             ));
-        drupal_set_message(t('Content Direct ' . strtoupper($method) . ' request fired'), 'status', FALSE);
+        drupal_set_message(t('Content Direct ' . strtoupper($method) . ' request fired.'), 'status', FALSE);
         return TRUE;
       }
     }
@@ -223,6 +279,7 @@ class ContentPusher {
             '%message' => $exception->getMessage(),
             '%body' => '<pre>' . Html::escape($exception->getResponse()->getBody()) . '</pre>',
           ));
+      drupal_set_message(t('Content Direct Error: ' . strtoupper($method) . ' request failed.'), 'error', FALSE);
       return FALSE;
     }
 
