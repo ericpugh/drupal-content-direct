@@ -1,17 +1,11 @@
 resources:
-  entity:node:
+  'entity:node':
     GET:
       supported_formats:
         - json
       supported_auth:
         - basic_auth
-        - cookie
     POST:
-      supported_formats:
-        - json
-      supported_auth:
-        - basic_auth
-    PATCH:
       supported_formats:
         - json
       supported_auth:
@@ -21,19 +15,18 @@ resources:
         - json
       supported_auth:
         - basic_auth
-  entity:taxonomy_vocabulary:
+    PATCH:
+      supported_formats:
+        - json
+      supported_auth:
+        - basic_auth
+  'entity:taxonomy_term':
     GET:
       supported_formats:
         - json
       supported_auth:
         - basic_auth
-        - cookie
     POST:
-      supported_formats:
-        - json
-      supported_auth:
-        - basic_auth
-    PATCH:
       supported_formats:
         - json
       supported_auth:
@@ -43,14 +36,23 @@ resources:
         - json
       supported_auth:
         - basic_auth
-  entity:taxonomy_vocabulary:
+    PATCH:
+      supported_formats:
+        - json
+      supported_auth:
+        - basic_auth
+  'entity:taxonomy_vocabulary':
     GET:
       supported_formats:
         - json
       supported_auth:
         - basic_auth
-        - cookie
     POST:
+      supported_formats:
+        - json
+      supported_auth:
+        - basic_auth
+    DELETE:
       supported_formats:
         - json
       supported_auth:
@@ -60,7 +62,23 @@ resources:
         - json
       supported_auth:
         - basic_auth
+  'entity:file':
+    GET:
+      supported_formats:
+        - json
+      supported_auth:
+        - basic_auth
+    POST:
+      supported_formats:
+        - json
+      supported_auth:
+        - basic_auth
     DELETE:
+      supported_formats:
+        - json
+      supported_auth:
+        - basic_auth
+    PATCH:
       supported_formats:
         - json
       supported_auth:
