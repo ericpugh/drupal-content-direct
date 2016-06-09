@@ -7,5 +7,5 @@ configure: content_direct.settings
 dependencies:
   - rest
   - serialization
-  - hal
   - basic_auth
+  - file_entity

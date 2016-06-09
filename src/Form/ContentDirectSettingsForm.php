@@ -120,6 +120,7 @@ class ContentDirectSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // @TODO: validate REST settings (e.g. Formats match) and provide feedback if mismatched local settings.
     parent::submitForm($form, $form_state);
     $this->config('content_direct.settings')
         ->set('protocol', $form_state->getValue('protocol'))
