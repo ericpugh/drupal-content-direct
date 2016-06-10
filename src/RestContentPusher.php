@@ -112,7 +112,7 @@ class RestContentPusher implements ContentPusherInterface{
   }
 
   /**
-   * get request data from a Node object.
+   * Get request data from a Node object.
    *
    * @param \Drupal\node\Entity\Node $node
    *   The Node.
@@ -121,25 +121,32 @@ class RestContentPusher implements ContentPusherInterface{
    *   Return a json string.
    */
   public function getNodeData(Node $node) {
-    //@TODO: make a head request to determine if entity references exist on remote site?
     $full_data = $this->serializer->serialize($node, $this->settings->get('format'), ['plugin_id' => 'entity']);
     $clean_data = array();
     foreach(json_decode($full_data) as $k => $v) {
-      if(!in_array($k, $this->ignore_fields)) {
+      if (!in_array($k, $this->ignore_fields)) {
         $clean_data[$k] = $v;
       }
     }
     return json_encode($clean_data);
   }
 
+  /**
+   * Get taxonomy terms from a Node object.
+   *
+   * @param \Drupal\node\Entity\Node $node
+   *   The Node.
+   *
+   * @return array
+   *   Array of taxonomy term objects.
+   */
   public function getTerms(Node $node) {
-//    $field_definitions = $node->getFieldDefinition('field_tags');
-//    return $field_definitions;
     $terms = array();
     $serialized = $this->serializer->serialize($node, $this->settings->get('format'), ['plugin_id' => 'entity']);
-    foreach(json_decode($serialized) as $field) {
-      foreach($field as $field_item) {
-        if($field_item->target_type == 'taxonomy_term') {
+    $simplified_node_data = json_decode($serialized);
+    foreach ($simplified_node_data as $field_name => $field_data) {
+      foreach ($field_data as $field_item) {
+        if (property_exists($field_item, 'target_type') && $field_item->target_type == 'taxonomy_term') {
           array_push($terms, Term::load($field_item->target_id));
         }
       }
@@ -147,7 +154,24 @@ class RestContentPusher implements ContentPusherInterface{
     return !empty($terms) ? $terms : FALSE;
   }
 
+  /**
+   * Make an HTTP Request to verify the existence of an Entity.
+   *
+   * @param string $entity_type
+   *   The Entity type
+   *
+   * @param string $entity_id
+   *   The Entity id
+   *
+   * @return bool
+   *   The Entity exists
+   */
   public function remoteEntityExists($entity_type, $entity_id) {
+    // @TODO: Fix problem to be updated in core 8.2 where a request to /taxonomy/term/X?_format=json returns {"message":"unacceptable format"}
+    // see https://www.drupal.org/node/2449143
+    // see the 8.2 fix in https://www.drupal.org/node/2730497
+
+    // Get the Request URI based on current Entity type.
     switch (strtolower($entity_type)) {
       case 'taxonomy_term':
           $uri = is_numeric($entity_id) ? 'taxonomy/term/' . $entity_id : NULL;
@@ -169,11 +193,21 @@ class RestContentPusher implements ContentPusherInterface{
         'base_uri' =>  $this->settings->get('protocol') . '://' . $this->settings->get('host'),
         'timeout' => 5,
         'connect_timeout' => 5,
+        'auth' => array(
+            $this->settings->get('username'),
+            $this->settings->get('password'),
+        ),
+        'headers' => array(
+            'Content-Type' => $header_format,
+            'Accept' => $header_format,
+            'X-CSRF-Token' => $this->token,
+        ),
     );
+
     try {
       $uri = $uri . '?_format=' . $format;
-      dpm('made HEAD request to ' . $uri);
-      $response = $this->httpClient->request('head', $uri, $options);
+      // @TODO: This SHOULD be a HEAD request instead of a GET request.
+      $response = $this->httpClient->request('get', $uri, $options);
       if ($response) {
         dpm($response->getBody());
         return TRUE;
@@ -182,7 +216,7 @@ class RestContentPusher implements ContentPusherInterface{
     catch (RequestException $exception) {
       return FALSE;
     }
-
+    return FALSE;
 
   }
 
