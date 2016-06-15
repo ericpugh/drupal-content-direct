@@ -121,7 +121,11 @@ class ContentDirectSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // @TODO: validate REST settings (e.g. Formats match) and provide feedback if mismatched local settings.
-    parent::submitForm($form, $form_state);
+//    $modules = $container->getParameter('container.modules');
+//    if (isset($modules['hal'])) {
+//      // Yes, hal module is enabled.
+//    }
+      parent::submitForm($form, $form_state);
     $this->config('content_direct.settings')
         ->set('protocol', $form_state->getValue('protocol'))
         ->set('host', $form_state->getValue('host'))

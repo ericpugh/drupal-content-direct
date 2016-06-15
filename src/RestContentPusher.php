@@ -8,6 +8,8 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 //use GuzzleHttp\Cookie\CookieJarInterface;
 //use GuzzleHttp\Cookie\CookieJar;
+use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
@@ -121,29 +123,64 @@ class RestContentPusher implements ContentPusherInterface{
    *   Return a json string.
    */
   public function getNodeData(Node $node) {
-    $full_data = $this->serializer->serialize($node, $this->settings->get('format'), ['plugin_id' => 'entity']);
+    $full_data = $this->serializer->serialize($node, $this->settings->get('format'), array('plugin_id' => 'entity'));
     $clean_data = array();
     foreach(json_decode($full_data) as $k => $v) {
       if (!in_array($k, $this->ignore_fields)) {
         $clean_data[$k] = $v;
       }
     }
-    return json_encode($clean_data);
+    $json = json_encode($clean_data);
+    return $this->replaceHypermediaLinks($json);
+  }
+
+  public function getFileData(File $file) {
+    //$serialized_file = $this->serializer->serialize($file, $this->settings->get('format'), array('included_fields' => array('data')));
+    $serialized_file = $this->serializer->serialize($file, $this->settings->get('format'));
+    // Unset the data property that was set on the file object when serialized.
+    unset($file->data);
+
+    return $this->replaceHypermediaLinks($serialized_file);
+  }
+
+  public function replaceHypermediaLinks($json) {
+    // Change the hypermedia links in given string to use the remote hostname
+    $local_protocol = stripos($_SERVER['SERVER_PROTOCOL'],'https') === TRUE ? 'https' : 'http';
+    $find_link = $local_protocol . ':\/\/' . $_SERVER['SERVER_NAME'];
+    $replace_link = $this->settings->get('protocol') . ':\/\/' . $this->settings->get('host');
+    return str_replace(
+        $find_link,
+        $replace_link,
+        $json
+    );
+
+  }
+
+    /**
+   * Get file entities from serialized Node data.
+   *
+   * @param string $json_data
+   *   The Node data.
+   *
+   * @return array
+   *   Array of serializeed file objects.
+   */
+  public function getFiles(Node $node) {
+    // @TODO: Get the files from node object using getFieldDefinitions or some other API method.
   }
 
   /**
-   * Get taxonomy terms from a Node object.
+   * Get taxonomy terms from serialized Node data.
    *
-   * @param \Drupal\node\Entity\Node $node
-   *   The Node.
+   * @param string $json_data
+   *   The Node data.
    *
    * @return array
    *   Array of taxonomy term objects.
    */
-  public function getTerms(Node $node) {
+  public function getTerms($json_data) {
     $terms = array();
-    $serialized = $this->serializer->serialize($node, $this->settings->get('format'), ['plugin_id' => 'entity']);
-    $simplified_node_data = json_decode($serialized);
+    $simplified_node_data = json_decode($json_data);
     foreach ($simplified_node_data as $field_name => $field_data) {
       foreach ($field_data as $field_item) {
         if (property_exists($field_item, 'target_type') && $field_item->target_type == 'taxonomy_term') {

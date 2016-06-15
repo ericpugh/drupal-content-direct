@@ -25,6 +25,7 @@ function content_direct_help($route_name) {
  * Implements hook_node_insert().
  */
 function content_direct_node_insert(Node $node) {
+  dpm('content_direct_node_insert fired!');
   if($node->isPublished()) {
     $pusher = \Drupal::service('content_direct.rest_content_pusher');
     $data = $pusher->getNodeData($node);
@@ -38,31 +39,47 @@ function content_direct_node_insert(Node $node) {
 /**
  * Implements hook_node_update().
  */
-function content_direct_node_update($node) {
+function content_direct_node_update(Node $node) {
+  dpm('content_direct_node_update fired!');
   // @TODO: handle a node going from published to unpublished.
 
-  $pusher = \Drupal::service('content_direct.rest_content_pusher');
-  $data = $pusher->getNodeData($node);
-  dpm('data:');
-  dpm($data);
-  $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
+//  $pusher = \Drupal::service('content_direct.rest_content_pusher');
+//  $data = $pusher->getNodeData($node);
+//  dpm('data:');
+//  dpm($data);
+//  $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
 
-//  $terms = $pusher->getTerms($node);
-//  foreach ($terms as $term) {
-//    if( $pusher->remoteEntityExists('taxonomy_term', $term->id())) {
-//      dpm('Yes term exists.');
-//    }
-//    else {
-//      dpm('No. no term over there dude.');
-//    }
-//  }
 }
+
 
 /**
  * Implements hook_node_delete().
  */
 function content_direct_node_delete($node) {
+  dpm('content_direct_node_delete fired!');
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   $pusher->request('delete', 'node/' . $node->id());
 
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function content_direct_file_update($file) {
+  dpm('content_direct_file_update fired!');
+
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function content_direct_file_insert($file) {
+  dpm('content_direct_file_update fired!');
+  $pusher = \Drupal::service('content_direct.rest_content_pusher');
+  $data = $pusher->getFileData($file);
+  //dpm('file:');
+  //dpm($data);
+  if ($data) {
+    $pusher->request('post', 'entity/file/', array('body' => $data));
+  }
 }
