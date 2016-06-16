@@ -123,14 +123,24 @@ class RestContentPusher implements ContentPusherInterface{
    *   Return a json string.
    */
   public function getNodeData(Node $node) {
-    $full_data = $this->serializer->serialize($node, $this->settings->get('format'), array('plugin_id' => 'entity'));
-    $clean_data = array();
-    foreach(json_decode($full_data) as $k => $v) {
-      if (!in_array($k, $this->ignore_fields)) {
-        $clean_data[$k] = $v;
+    $serialized_node = $this->serializer->serialize($node, $this->settings->get('format'));
+    $data = json_decode($serialized_node);
+    // Remove fields which might create permissions issues on the remote.
+    foreach($data as $key => $value) {
+      if (in_array($key, $this->ignore_fields)) {
+        unset($data->$key);
       }
     }
-    $json = json_encode($clean_data);
+    // Further clean the data by removing revision_uid from _embedded
+    if (property_exists($data, '_embedded')) {
+      foreach ($data->_embedded as $key => $value) {
+        // Test if the key ends with the string.
+        if (substr_compare($key, 'revision_uid', -12, 12) === 0) {
+          unset($data->_embedded->$key);
+        }
+      }
+    }
+    $json = json_encode($data);
     return $this->replaceHypermediaLinks($json);
   }
 
@@ -144,6 +154,8 @@ class RestContentPusher implements ContentPusherInterface{
   }
 
   public function replaceHypermediaLinks($json) {
+    // @TODO: can this be accomplished using setLinkDomain() in Drupal\rest\LinkManager\LinkManager ?
+
     // Change the hypermedia links in given string to use the remote hostname
     $local_protocol = stripos($_SERVER['SERVER_PROTOCOL'],'https') === TRUE ? 'https' : 'http';
     $find_link = $local_protocol . ':\/\/' . $_SERVER['SERVER_NAME'];
@@ -244,6 +256,7 @@ class RestContentPusher implements ContentPusherInterface{
     try {
       $uri = $uri . '?_format=' . $format;
       // @TODO: This SHOULD be a HEAD request instead of a GET request.
+      // see: HEAD in Drupal\rest\Plugin\ResourceBase
       $response = $this->httpClient->request('get', $uri, $options);
       if ($response) {
         dpm($response->getBody());
@@ -306,6 +319,7 @@ class RestContentPusher implements ContentPusherInterface{
    */
   public function request($method, $uri, $request_options = array()) {
     $method = strtolower($method);
+
     $format = $this->settings->get('format');
     $header_format = 'application/' . str_replace('_', '+', $format);
     $options = array(
