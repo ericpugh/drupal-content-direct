@@ -70,11 +70,11 @@ class ContentDirectSettingsForm extends ConfigFormBase {
         '#type' => 'select',
         '#title' => $this->t('Format'),
         '#options' => [
-            'json' => 'JSON',
             'hal_json' => 'HAL+JSON',
         ],
         '#required' => TRUE,
         '#default_value' => $settings->get('format'),
+        '#description' => $this->t('Only hal+json is supported at this time.'),
     ];
 
     $form['basic_authentication'] = array(
@@ -101,15 +101,6 @@ class ContentDirectSettingsForm extends ConfigFormBase {
         '#default_value' => $settings->get('password'),
         '#description' => $this->t('Password.'),
     ];
-//    $form['basic_authentication']['token'] = [
-//        '#type' => 'textfield',
-//        '#title' => $this->t('Token'),
-//        '#size' => 60,
-//        '#maxlength' => 128,
-//        '#required' => FALSE,
-//        '#default_value' => $settings->get('token'),
-//        '#description' => $this->t('CSRF Token. This can be retreived from the endpoint "rest/service/token"'),
-//    ];
 
     // @TODO: add options to select which types of content to push
 

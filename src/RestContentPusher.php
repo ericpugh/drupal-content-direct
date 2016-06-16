@@ -154,7 +154,7 @@ class RestContentPusher implements ContentPusherInterface{
   }
 
   public function replaceHypermediaLinks($json) {
-    // @TODO: can this be accomplished using setLinkDomain() in Drupal\rest\LinkManager\LinkManager ?
+    // @TODO: can this be accomplished using setLinkDomain() in Drupal\rest\LinkManager\LinkManager or in link_domain in config?
 
     // Change the hypermedia links in given string to use the remote hostname
     $local_protocol = stripos($_SERVER['SERVER_PROTOCOL'],'https') === TRUE ? 'https' : 'http';
@@ -165,14 +165,13 @@ class RestContentPusher implements ContentPusherInterface{
         $replace_link,
         $json
     );
-
   }
 
     /**
-   * Get file entities from serialized Node data.
+   * Get file entities from Node data.
    *
-   * @param string $json_data
-   *   The Node data.
+   * @param Node $node
+   *   The Node object.
    *
    * @return array
    *   Array of serializeed file objects.
