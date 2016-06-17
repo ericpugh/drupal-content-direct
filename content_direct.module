@@ -48,6 +48,8 @@ function content_direct_node_update(Node $node) {
 //  dpm('data:');
 //  dpm($data);
 //  $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
+  
+  
 
 }
 
@@ -83,6 +85,8 @@ function content_direct_file_update($file) {
  * Implements hook_entity_delete().
  */
 function content_direct_file_delete($file) {
+  // @TODO: It seems the first delete request only changes the "status" of a file on remote to temporary, and the second deletes.
+  // Do I need to execute a delete twice to actually remove the file from the FS?
   dpm('content_direct_file_delete fired!');
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   $pusher->request('delete', 'file/' . $file->id());

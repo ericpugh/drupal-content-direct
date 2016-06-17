@@ -144,9 +144,14 @@ class RestContentPusher implements ContentPusherInterface{
     return $this->replaceHypermediaLinks($json);
   }
 
-  /*
+  /**
+   * Get request data from a File object with Base64 encoded file.
    *
+   * @param \Drupal\file_entity\Entity\FileEntity $file
+   *   The File.
    *
+   * @return string
+   *   Return a json string.
    */
   public function getFileData(File $file) {
     //$serialized_file = $this->serializer->serialize($file, $this->settings->get('format'), array('included_fields' => array('data')));
@@ -169,14 +174,17 @@ class RestContentPusher implements ContentPusherInterface{
     return $this->replaceHypermediaLinks($json);
   }
 
-  /*
+  /**
+   * Replace the hypermedia link_domain with the "remote" domain from Content Direct settings.
    *
+   * @param string $json
+   *   The HAL+JSON payload.
    *
+   * @return string
+   *   Return a json string.
    */
   public function replaceHypermediaLinks($json) {
     // @TODO: can this be accomplished using setLinkDomain() in Drupal\rest\LinkManager\LinkManager or in link_domain in config?
-
-    // Change the hypermedia links in given string to use the remote hostname
     $local_protocol = stripos($_SERVER['SERVER_PROTOCOL'],'https') === TRUE ? 'https' : 'http';
     $find_link = $local_protocol . ':\/\/' . $_SERVER['SERVER_NAME'];
     $replace_link = $this->settings->get('protocol') . ':\/\/' . $this->settings->get('host');
@@ -194,7 +202,7 @@ class RestContentPusher implements ContentPusherInterface{
    *   The Node object.
    *
    * @return array
-   *   Array of serializeed file objects.
+   *   Array of serialized file objects.
    */
   public function getFiles(Node $node) {
     // @TODO: Get the files from node object using getFieldDefinitions or some other API method.
