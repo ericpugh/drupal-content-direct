@@ -64,22 +64,26 @@ function content_direct_node_delete($node) {
 
 /**
  * Implements hook_entity_update().
+ *
+ * Update is fired any time a new file enity is created or updated.
  */
 function content_direct_file_update($file) {
   dpm('content_direct_file_update fired!');
+  $pusher = \Drupal::service('content_direct.rest_content_pusher');
+  $data = $pusher->getFileData($file);
+//  dpm('file:');
+//  dpm($data);
+  if ($data) {
+    $pusher->request('post', 'entity/file/', array('body' => $data));
+  }
 
 }
 
 /**
- * Implements hook_entity_insert().
+ * Implements hook_entity_delete().
  */
-function content_direct_file_insert($file) {
-  dpm('content_direct_file_update fired!');
+function content_direct_file_delete($file) {
+  dpm('content_direct_file_delete fired!');
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
-  $data = $pusher->getFileData($file);
-  //dpm('file:');
-  //dpm($data);
-  if ($data) {
-    $pusher->request('post', 'entity/file/', array('body' => $data));
-  }
+  $pusher->request('delete', 'file/' . $file->id());
 }

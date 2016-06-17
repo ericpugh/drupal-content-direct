@@ -144,15 +144,35 @@ class RestContentPusher implements ContentPusherInterface{
     return $this->replaceHypermediaLinks($json);
   }
 
+  /*
+   *
+   *
+   */
   public function getFileData(File $file) {
     //$serialized_file = $this->serializer->serialize($file, $this->settings->get('format'), array('included_fields' => array('data')));
     $serialized_file = $this->serializer->serialize($file, $this->settings->get('format'));
     // Unset the data property that was set on the file object when serialized.
     unset($file->data);
-
-    return $this->replaceHypermediaLinks($serialized_file);
+    // Remove fields which might create permissions issues on the remote.
+    $data = json_decode($serialized_file);
+    // Remove fields which might create permissions issues on the remote.
+    foreach($data as $key => $value) {
+      if (in_array($key, $this->ignore_fields)) {
+        unset($data->$key);
+      }
+      // Also remove status property from file.
+      if ($key == 'status') {
+        unset($data->$key);
+      }
+    }
+    $json = json_encode($data);
+    return $this->replaceHypermediaLinks($json);
   }
 
+  /*
+   *
+   *
+   */
   public function replaceHypermediaLinks($json) {
     // @TODO: can this be accomplished using setLinkDomain() in Drupal\rest\LinkManager\LinkManager or in link_domain in config?
 
