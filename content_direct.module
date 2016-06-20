@@ -6,6 +6,7 @@
  */
 
 use Drupal\node\Entity\Node;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * Implements hook_help().
@@ -43,13 +44,24 @@ function content_direct_node_update(Node $node) {
   dpm('content_direct_node_update fired!');
   // @TODO: handle a node going from published to unpublished.
 
-//  $pusher = \Drupal::service('content_direct.rest_content_pusher');
-//  $data = $pusher->getNodeData($node);
-//  dpm('data:');
-//  dpm($data);
-//  $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
-  
-  
+  $pusher = \Drupal::service('content_direct.rest_content_pusher');
+
+  if ($pusher->remoteEntityExists('node', $node->id())) {
+    $data = $pusher->getNodeData($node);
+    dpm('data:');
+    dpm($data);
+    $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
+  } else {
+    drupal_set_message(t('Remote <i>node</i> does not exist.'), 'warning');
+  }
+
+  // This only has to be in the insert hook.
+//  $query = \Drupal::entityQuery('taxonomy_term');
+//  $query->condition('nid', $node->id(), '=');
+//  $tids = $query->execute();
+//  $terms = Term::loadMultiple($tids);
+//
+//  dpm($terms);
 
 }
 
@@ -70,6 +82,7 @@ function content_direct_node_delete($node) {
  * Update is fired any time a new file enity is created or updated.
  */
 function content_direct_file_update($file) {
+  // @TODO: check if remote file exists, if so try PATCH request
   dpm('content_direct_file_update fired!');
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   $data = $pusher->getFileData($file);

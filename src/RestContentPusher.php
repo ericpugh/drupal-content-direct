@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use Drupal\node\Entity\Node;
-use Drupal\taxonomy\Entity\Term;
+use Drupal\taxonomy\TermStorage;
 use Drupal\Component\Utility\Html;
 
 /**
@@ -217,18 +217,47 @@ class RestContentPusher implements ContentPusherInterface{
    * @return array
    *   Array of taxonomy term objects.
    */
-  public function getTerms($json_data) {
-    $terms = array();
-    $simplified_node_data = json_decode($json_data);
-    foreach ($simplified_node_data as $field_name => $field_data) {
-      foreach ($field_data as $field_item) {
-        if (property_exists($field_item, 'target_type') && $field_item->target_type == 'taxonomy_term') {
-          array_push($terms, Term::load($field_item->target_id));
-        }
-      }
-    }
-    return !empty($terms) ? $terms : FALSE;
+//  public function getTerms($json_data) {
+//    $terms = array();
+//    $simplified_node_data = json_decode($json_data);
+//    foreach ($simplified_node_data as $field_name => $field_data) {
+//      foreach ($field_data as $field_item) {
+//        if (property_exists($field_item, 'target_type') && $field_item->target_type == 'taxonomy_term') {
+//          array_push($terms, Term::load($field_item->target_id));
+//        }
+//      }
+//    }
+//    return !empty($terms) ? $terms : FALSE;
+//  }
+  public function getTerms(Node $node) {
+//    $query = db_select('taxonomy_term_field_data', 'td');
+//    $query->innerJoin('taxonomy_index', 'tn', 'td.tid = tn.tid');
+//    $query->fields('td', array('tid'));
+//    $query->addField('tn', 'nid', 'node_nid');
+//    $query->orderby('td.weight');
+//    $query->orderby('td.name');
+//    $query->condition('tn.nid', $node->id(), 'IN');
+//    $query->addTag('term_access');
+//    $results = array();
+//    $all_tids = array();
+//    foreach ($query->execute() as $term_record) {
+//      $results[$term_record->node_nid][] = $term_record->tid;
+//      $all_tids[] = $term_record->tid;
+//    }
+//
+//    $all_terms = ->loadMultiple($all_tids);
+//    $terms = array();
+//    foreach ($results as $nid => $tids) {
+//      foreach ($tids as $tid) {
+//        $terms[$nid][$tid] = $all_terms[$tid];
+//      }
+//    }
+//    return $terms;
+
+    // @TODO: dependency injection
+
   }
+
 
   /**
    * Make an HTTP Request to verify the existence of an Entity.
@@ -282,18 +311,18 @@ class RestContentPusher implements ContentPusherInterface{
 
     try {
       $uri = $uri . '?_format=' . $format;
-      // @TODO: This SHOULD be a HEAD request instead of a GET request.
-      // see: HEAD in Drupal\rest\Plugin\ResourceBase
-      $response = $this->httpClient->request('get', $uri, $options);
-      if ($response) {
-        dpm($response->getBody());
+      $response = $this->httpClient->request('head', $uri, $options);
+      if ($response && $response->getStatusCode() === 200) {
+        dpm($response->getStatusCode());
         return TRUE;
+      }
+      else {
+        return FALSE;
       }
     }
     catch (RequestException $exception) {
       return FALSE;
     }
-    return FALSE;
 
   }
 
