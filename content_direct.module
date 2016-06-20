@@ -33,6 +33,14 @@ function content_direct_node_insert(Node $node) {
     dpm('data:');
     dpm($data);
     $pusher->request('post', 'entity/node', array('body' => $data));
+
+    // @TODO: create new terms if they don't exist remotely.
+    $terms = $pusher->getTerms($node);
+    dpm(count($terms) . ' terms referenced on this node.');
+
+    $files = $pusher->getFiles($node);
+    dpm(count($files) . ' files referenced on this node.');
+
   }
 
 }
@@ -45,23 +53,15 @@ function content_direct_node_update(Node $node) {
   // @TODO: handle a node going from published to unpublished.
 
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
-
   if ($pusher->remoteEntityExists('node', $node->id())) {
     $data = $pusher->getNodeData($node);
     dpm('data:');
     dpm($data);
     $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
-  } else {
-    drupal_set_message(t('Remote <i>node</i> does not exist.'), 'warning');
   }
-
-  // This only has to be in the insert hook.
-//  $query = \Drupal::entityQuery('taxonomy_term');
-//  $query->condition('nid', $node->id(), '=');
-//  $tids = $query->execute();
-//  $terms = Term::loadMultiple($tids);
-//
-//  dpm($terms);
+  else {
+    drupal_set_message(t('Content Direct: Remote <i>node/' . $node->id() . '</i> does not exist.'), 'warning');
+  }
 
 }
 
@@ -70,9 +70,16 @@ function content_direct_node_update(Node $node) {
  * Implements hook_node_delete().
  */
 function content_direct_node_delete($node) {
+  // @TODO: handle a node going from published to unpublished. Should this delete or unpublish remote node?
+
   dpm('content_direct_node_delete fired!');
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
-  $pusher->request('delete', 'node/' . $node->id());
+  if ($pusher->remoteEntityExists('node', $node->id())) {
+    $pusher->request('delete', 'node/' . $node->id());
+  }
+  else {
+    drupal_set_message(t('Content Direct: Remote <i>node/' . $node->id() . '</i> does not exist.'), 'warning');
+  }
 
 }
 

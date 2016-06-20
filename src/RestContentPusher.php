@@ -2,19 +2,19 @@
 
 namespace Drupal\content_direct;
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
-//use GuzzleHttp\Cookie\CookieJarInterface;
-//use GuzzleHttp\Cookie\CookieJar;
-use Drupal\file\Entity\File;
-use Drupal\file\FileInterface;
+use GuzzleHttp\Cookie\CookieJar;
 use Symfony\Component\Serializer\SerializerInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\BadResponseException;
 use Drupal\node\Entity\Node;
-use Drupal\taxonomy\TermStorage;
+use Drupal\taxonomy\Entity\Term;
+use Drupal\file\Entity\File;
 use Drupal\Component\Utility\Html;
 
 /**
@@ -39,6 +39,13 @@ class RestContentPusher implements ContentPusherInterface{
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
+
+  /**
+   * Database Service Object.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $connection;
 
   /**
    * Logger Factory Service Object.
@@ -96,6 +103,7 @@ class RestContentPusher implements ContentPusherInterface{
    */
   public function __construct(
       ConfigFactoryInterface $config_factory,
+      Connection $connection,
       LoggerChannelFactoryInterface $logger_factory,
       ModuleHandlerInterface $module_handler,
       ContainerAwareEventDispatcher $event_dispatcher,
@@ -103,6 +111,7 @@ class RestContentPusher implements ContentPusherInterface{
       ClientInterface $http_client
   ) {
     $this->configFactory = $config_factory;
+    $this->connection = $connection;
     $this->loggerFactory = $logger_factory;
     $this->moduleHandler = $module_handler;
     $this->eventDispatcher = $event_dispatcher;
@@ -145,6 +154,20 @@ class RestContentPusher implements ContentPusherInterface{
   }
 
   /**
+   * Get file entities referenced in a Node's fields.
+   *
+   * @param \Drupal\node\Entity\Node $node
+   *   The Node.
+   *
+   * @return array
+   *   Array of file objects.
+   */
+  public function getFiles(Node $node) {
+    $fids = $this->connection->query("SELECT fid FROM {file_usage} WHERE type = 'node' AND id = :nid", array(':nid' => $node->id()))->fetchCol();
+    return File::loadMultiple($fids);
+  }
+
+  /**
    * Get request data from a File object with Base64 encoded file.
    *
    * @param \Drupal\file_entity\Entity\FileEntity $file
@@ -175,6 +198,21 @@ class RestContentPusher implements ContentPusherInterface{
   }
 
   /**
+   * Get taxonomy terms referenced in a Node's fields.
+   *
+   * @param \Drupal\node\Entity\Node $node
+   *   The Node.
+   *
+   * @return array
+   *   Array of taxonomy term objects.
+   */
+  public function getTerms(Node $node) {
+    $tids = $this->connection->query('SELECT tid FROM {taxonomy_index} WHERE nid = :nid', array(':nid' => $node->id()))->fetchCol();
+    return Term::loadMultiple($tids);
+  }
+
+
+  /**
    * Replace the hypermedia link_domain with the "remote" domain from Content Direct settings.
    *
    * @param string $json
@@ -194,70 +232,6 @@ class RestContentPusher implements ContentPusherInterface{
         $json
     );
   }
-
-    /**
-   * Get file entities from Node data.
-   *
-   * @param Node $node
-   *   The Node object.
-   *
-   * @return array
-   *   Array of serialized file objects.
-   */
-  public function getFiles(Node $node) {
-    // @TODO: Get the files from node object using getFieldDefinitions or some other API method.
-  }
-
-  /**
-   * Get taxonomy terms from serialized Node data.
-   *
-   * @param string $json_data
-   *   The Node data.
-   *
-   * @return array
-   *   Array of taxonomy term objects.
-   */
-//  public function getTerms($json_data) {
-//    $terms = array();
-//    $simplified_node_data = json_decode($json_data);
-//    foreach ($simplified_node_data as $field_name => $field_data) {
-//      foreach ($field_data as $field_item) {
-//        if (property_exists($field_item, 'target_type') && $field_item->target_type == 'taxonomy_term') {
-//          array_push($terms, Term::load($field_item->target_id));
-//        }
-//      }
-//    }
-//    return !empty($terms) ? $terms : FALSE;
-//  }
-  public function getTerms(Node $node) {
-//    $query = db_select('taxonomy_term_field_data', 'td');
-//    $query->innerJoin('taxonomy_index', 'tn', 'td.tid = tn.tid');
-//    $query->fields('td', array('tid'));
-//    $query->addField('tn', 'nid', 'node_nid');
-//    $query->orderby('td.weight');
-//    $query->orderby('td.name');
-//    $query->condition('tn.nid', $node->id(), 'IN');
-//    $query->addTag('term_access');
-//    $results = array();
-//    $all_tids = array();
-//    foreach ($query->execute() as $term_record) {
-//      $results[$term_record->node_nid][] = $term_record->tid;
-//      $all_tids[] = $term_record->tid;
-//    }
-//
-//    $all_terms = ->loadMultiple($all_tids);
-//    $terms = array();
-//    foreach ($results as $nid => $tids) {
-//      foreach ($tids as $tid) {
-//        $terms[$nid][$tid] = $all_terms[$tid];
-//      }
-//    }
-//    return $terms;
-
-    // @TODO: dependency injection
-
-  }
-
 
   /**
    * Make an HTTP Request to verify the existence of an Entity.
@@ -292,37 +266,14 @@ class RestContentPusher implements ContentPusherInterface{
         return FALSE;
     }
 
-    $format = $this->settings->get('format');
-    $header_format = 'application/' . str_replace('_', '+', $format);
-    $options = array(
-        'base_uri' =>  $this->settings->get('protocol') . '://' . $this->settings->get('host'),
-        'timeout' => 5,
-        'connect_timeout' => 5,
-        'auth' => array(
-            $this->settings->get('username'),
-            $this->settings->get('password'),
-        ),
-        'headers' => array(
-            'Content-Type' => $header_format,
-            'Accept' => $header_format,
-            'X-CSRF-Token' => $this->token,
-        ),
-    );
-
-    try {
-      $uri = $uri . '?_format=' . $format;
-      $response = $this->httpClient->request('head', $uri, $options);
+    // @TODO: Change this to a head request. See: https://www.drupal.org/node/2752325
+      $response = $this->request('get', $uri);
       if ($response && $response->getStatusCode() === 200) {
-        dpm($response->getStatusCode());
         return TRUE;
       }
       else {
         return FALSE;
       }
-    }
-    catch (RequestException $exception) {
-      return FALSE;
-    }
 
   }
 
@@ -351,7 +302,7 @@ class RestContentPusher implements ContentPusherInterface{
 //        ],
 //        'cookies' => $jar,
 //    );
-    //$login = $this->httpClient->request('post', '/user/login', array_merge($options, $login_options));
+//    $login = $this->httpClient->request('post', '/user/login', array_merge($options, $login_options));
 
     $token = $this->httpClient->request('get', 'rest/session/token', $options)->getBody();
     return $token->__toString();
@@ -370,8 +321,8 @@ class RestContentPusher implements ContentPusherInterface{
    * @see http://gsa.github.io/slate
    * @see http://guzzle.readthedocs.org/en/5.3/quickstart.html
    *
-   * @return bool
-   *   Return if request successfully
+   * @return  \GuzzleHttp\Psr7\Request $response
+   * @throws RequestException
    */
   public function request($method, $uri, $request_options = array()) {
     $method = strtolower($method);
@@ -399,7 +350,8 @@ class RestContentPusher implements ContentPusherInterface{
     try {
       $uri = $uri . '?_format=' . $format;
       $response = $this->httpClient->request($method, $uri, $options);
-      if ($response) {
+      if ($response->getStatusCode() === 200) {
+        // @TODO: test success in response and output message
         $this->loggerFactory->get('content_direct')
           ->notice('Request via %method request to %uri with options: %options. Got a %response_code response.',
             array(
@@ -409,8 +361,13 @@ class RestContentPusher implements ContentPusherInterface{
               '%response_code' => $response->getStatusCode(),
             ));
         drupal_set_message(t('Content Direct ' . strtoupper($method) . ' request fired.'), 'status', FALSE);
-        return TRUE;
+        return $response;
       }
+    }
+    catch (BadResponseException $exception) {
+      $response = $exception->getResponse();
+      drupal_set_message(t('Content Direct: Request failed due to HTTP error "%error"', array('%error' => $response->getStatusCode() . ' ' . $response->getReasonPhrase())), 'error');
+      return FALSE;
     }
     catch (RequestException $exception) {
       $this->loggerFactory->get('content_pusher')
@@ -420,7 +377,7 @@ class RestContentPusher implements ContentPusherInterface{
             '%message' => $exception->getMessage(),
             '%body' => '<pre>' . Html::escape($exception->getResponse()->getBody()) . '</pre>',
           ));
-      drupal_set_message(t('Content Direct Error: ' . strtoupper($method) . ' request failed.'), 'error', FALSE);
+      drupal_set_message(t('Content Direct: %method request failed.', array('%method' => strtoupper($method))), 'error');
       return FALSE;
     }
 
