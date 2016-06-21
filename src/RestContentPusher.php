@@ -403,8 +403,9 @@ class RestContentPusher implements ContentPusherInterface{
     try {
       $uri = $uri . '?_format=' . $format;
       $response = $this->httpClient->request($method, $uri, $options);
-      if ($response->getStatusCode() === 200) {
-        // @TODO: test success in response and output message
+      $status_code = $response->getStatusCode();
+      if (($status_code === 200 || $status_code === 201) && ($method != 'get' || $method != 'head')) {
+        drupal_set_message(t('Content Direct: %method request sent to <i>%uri</i>. Response: %status, %phrase', array('%method' => strtoupper($method), '%uri' => $uri, '%status' => $status_code, '%phrase' => $response->getReasonPhrase())), 'status');
         $this->loggerFactory->get('content_direct')
           ->notice('Request via %method request to %uri with options: %options. Got a %response_code response.',
             array(
@@ -413,15 +414,14 @@ class RestContentPusher implements ContentPusherInterface{
               '%options' => '<pre>' . Html::escape(print_r($options, TRUE)) . '</pre>',
               '%response_code' => $response->getStatusCode(),
             ));
-        drupal_set_message(t('Content Direct ' . strtoupper($method) . ' request fired.'), 'status', FALSE);
         return $response;
       }
     }
-    catch (BadResponseException $exception) {
-      $response = $exception->getResponse();
-      drupal_set_message(t('Content Direct: Request failed due to HTTP error "%error"', array('%error' => $response->getStatusCode() . ' ' . $response->getReasonPhrase())), 'error');
-      return FALSE;
-    }
+//    catch (BadResponseException $exception) {
+//      $response = $exception->getResponse();
+//      drupal_set_message(t('Content Direct: Request failed due to HTTP error "%error"', array('%error' => $response->getStatusCode() . ' ' . $response->getReasonPhrase())), 'error');
+//      return FALSE;
+//    }
     catch (RequestException $exception) {
       $this->loggerFactory->get('content_pusher')
         ->error('Content Direct Error, Code: %code, Message: %message, Body: %body',
