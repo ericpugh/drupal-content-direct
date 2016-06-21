@@ -1,4 +1,4 @@
 services:
   content_direct.rest_content_pusher:
     class: Drupal\content_direct\RestContentPusher
-    arguments: ['@config.factory', '@database', '@logger.factory', '@module_handler', '@event_dispatcher', '@serializer', '@http_client']
+    arguments: ['@config.factory', '@database', '@logger.factory', '@module_handler', '@event_dispatcher', '@serializer', '@http_client', '@path.alias_manager']

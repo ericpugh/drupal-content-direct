@@ -34,14 +34,20 @@ function content_direct_node_insert(Node $node) {
     dpm($data);
     $pusher->request('post', 'entity/node', array('body' => $data));
 
-    // @TODO: create new terms if they don't exist remotely.
-    $terms = $pusher->getTerms($node);
-    dpm(count($terms) . ' terms referenced on this node.');
-
-    $files = $pusher->getFiles($node);
-    dpm(count($files) . ' files referenced on this node.');
-
   }
+
+}
+
+/**
+ * Implements hook_node_presave().
+ */
+// @TODO: Why doesn't this hook work?
+function content_direct_node_presave(Node $node) {
+  dpm('content_direct_node_presave fired!');
+  $pusher = \Drupal::service('content_direct.rest_content_pusher');
+
+  $files = $pusher->getFiles($node);
+  dpm(count($files) . ' files referenced on this node.');
 
 }
 
@@ -81,6 +87,54 @@ function content_direct_node_delete($node) {
     drupal_set_message(t('Content Direct: Remote <i>node/' . $node->id() . '</i> does not exist.'), 'warning');
   }
 
+}
+
+/**
+ * Implements hook_entity_insert().
+ *
+ * Update is fired any time a new term is created.
+ */
+function content_direct_taxonomy_term_insert($term) {
+  dpm('content_direct_taxonomy_term_insert fired!');
+  $pusher = \Drupal::service('content_direct.rest_content_pusher');
+  $vid = $term->getVocabularyId();
+  // Don't attempt to insert a Term if it's vocabulary doesn't exist.
+  if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
+    $data = $pusher->getTermData($term);
+    if ($data) {
+      $pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
+    }
+  }
+  else {
+    drupal_set_message(t('Content Direct: Remote vocabulary <i>' . $vid . '</i> does not exist. Term was not created.'), 'warning');
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ */
+function content_direct_taxonomy_term_update($term) {
+  dpm('content_direct_taxonomy_term_update fired!');
+  $pusher = \Drupal::service('content_direct.rest_content_pusher');
+  $vid = $term->getVocabularyId();
+  if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
+    $data = $pusher->getTermData($term);
+    dpm('term data:');
+    dpm($data);
+    if ($pusher->remoteEntityExists('taxonomy_term', $term->id())) {
+//    $data = $pusher->getTermData($term);
+//    dpm('term data:');
+//    dpm($data);
+      if ($data) {
+        $pusher->request('patch', 'taxonomy/term/' . $term->id(), array('body' => $data));
+      }
+    }
+
+  }
+  else {
+    drupal_set_message(t('Content Direct: Remote vocabulary <i>' . $vid . '</i> does not exist. Term was not created.'), 'warning');
+  }
 }
 
 /**

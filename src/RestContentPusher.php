@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\BadResponseException;
+use Drupal\Core\Path\AliasManager;
 use Drupal\node\Entity\Node;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\file\Entity\File;
@@ -82,7 +83,21 @@ class RestContentPusher implements ContentPusherInterface{
    */
   protected $httpClient;
 
+  /**
+   * The alias manager service.
+   *
+   * @var \Drupal\Core\Path\AliasManager
+   */
+  protected $alias_manager;
+
+  /**
+   * Content Direct configuration.
+   */
   protected $settings;
+
+  /**
+   * CSFR Token.
+   */
   protected $token;
 
   /**
@@ -108,7 +123,8 @@ class RestContentPusher implements ContentPusherInterface{
       ModuleHandlerInterface $module_handler,
       ContainerAwareEventDispatcher $event_dispatcher,
       SerializerInterface $serializer,
-      ClientInterface $http_client
+      ClientInterface $http_client,
+      AliasManager $alias_manager
   ) {
     $this->configFactory = $config_factory;
     $this->connection = $connection;
@@ -117,7 +133,7 @@ class RestContentPusher implements ContentPusherInterface{
     $this->eventDispatcher = $event_dispatcher;
     $this->serializer = $serializer;
     $this->httpClient = $http_client;
-
+    $this->alias_manager = $alias_manager;
     $this->settings = $this->configFactory->get('content_direct.settings');
     $this->token = $this->getToken();
   }
@@ -148,6 +164,14 @@ class RestContentPusher implements ContentPusherInterface{
           unset($data->_embedded->$key);
         }
       }
+    }
+    
+    // Manually attach the path alias
+    $alias = $this->alias_manager->getAliasByPath('/node/' . $node->id());
+    if ($alias) {
+      $data->path = array(
+          (object) array('alias' => $alias),
+      );
     }
     $json = json_encode($data);
     return $this->replaceHypermediaLinks($json);
@@ -211,6 +235,35 @@ class RestContentPusher implements ContentPusherInterface{
     return Term::loadMultiple($tids);
   }
 
+  /**
+   * Get request data from a Term object.
+   *
+   * @param \Drupal\taxonomy\Entity\Term $term
+   *   The Term.
+   *
+   * @return string
+   *   Return a json string.
+   */
+  public function getTermData(Term $term) {
+    $serialized_term = $this->serializer->serialize($term, $this->settings->get('format'));
+    $data = json_decode($serialized_term);
+    // Remove fields which might create permissions issues on the remote.
+    foreach($data as $key => $value) {
+      if (in_array($key, $this->ignore_fields)) {
+        unset($data->$key);
+      }
+    }
+    // Manually attach the path alias
+    $alias = $this->alias_manager->getAliasByPath('/taxonomy/term/' . $term->id());
+    if ($alias) {
+      $data->path = array(
+          (object) array('alias' => $alias),
+      );
+    }
+
+    $json = json_encode($data);
+    return $this->replaceHypermediaLinks($json);
+  }
 
   /**
    * Replace the hypermedia link_domain with the "remote" domain from Content Direct settings.

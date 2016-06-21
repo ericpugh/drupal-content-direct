@@ -111,7 +111,8 @@ class ContentDirectSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // @TODO: validate REST settings (e.g. Formats match) and provide feedback if mismatched local settings.
+    // @TODO: Validate REST settings (e.g. Formats match) and provide feedback if mismatched local settings.
+    // @TODO: After validating the remote endpoints, output message for each endpoint that failed.
 //    $modules = $container->getParameter('container.modules');
 //    if (isset($modules['hal'])) {
 //      // Yes, hal module is enabled.
