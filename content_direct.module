@@ -138,6 +138,16 @@ function content_direct_taxonomy_term_update($term) {
 }
 
 /**
+ * Implements hook_entity_delete().
+ *
+ */
+function content_direct_taxonomy_term_delete($term) {
+  dpm('content_direct_taxonomy_term_delete fired!');
+  $pusher = \Drupal::service('content_direct.rest_content_pusher');
+  $pusher->request('delete', 'taxonomy/term/' . $term->id());
+}
+
+/**
  * Implements hook_entity_update().
  *
  * Update is fired any time a new file enity is created or updated.
