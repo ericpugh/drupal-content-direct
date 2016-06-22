@@ -26,9 +26,11 @@ function content_direct_help($route_name) {
  * Implements hook_node_insert().
  */
 function content_direct_node_insert(Node $node) {
-  if($node->isPublished()) {
+  if ($node->isPublished()) {
     $pusher = \Drupal::service('content_direct.rest_content_pusher');
-    drupal_set_message(t('Content Direct: Create Node <i>' . $node->getTitle() . '</i>'));
+    drupal_set_message(t('Content Direct: Create Node <i>%identifier</i>',
+        array('%identifier' => $node->getTitle())
+    ));
     $data = $pusher->getNodeData($node);
     $pusher->request('post', 'entity/node', array('body' => $data));
   }
@@ -41,14 +43,17 @@ function content_direct_node_update(Node $node) {
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   if ($pusher->remoteEntityExists('node', $node->id())) {
     $data = $pusher->getNodeData($node);
-    drupal_set_message(t('Content Direct: Update Node <i>' . $node->getTitle() . '</i>'));
+    drupal_set_message(t('Content Direct: Update Node <i>%identifier</i>',
+        array('%identifier' => $node->getTitle())
+    ));
     $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
   }
   else {
-    drupal_set_message(t('Content Direct: Remote <i>node/' . $node->id() . '</i> does not exist.'), 'warning');
+    drupal_set_message(t('Content Direct: Remote Node <i>%identifier</i> does not exist. Node was not updated.',
+        array('%identifier' => 'node/' . $node->id())
+    ), 'warning');
   }
 }
-
 
 /**
  * Implements hook_node_delete().
@@ -56,11 +61,10 @@ function content_direct_node_update(Node $node) {
 function content_direct_node_delete(Node $node) {
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   if ($pusher->remoteEntityExists('node', $node->id())) {
-    drupal_set_message(t('Content Direct: Delete Node <i>' . $node->getTitle() . '</i>'));
+    drupal_set_message(t('Content Direct: Delete Node <i>%identifier</i>',
+        array('%identifier' => $node->getTitle())
+    ));
     $pusher->request('delete', 'node/' . $node->id());
-  }
-  else {
-    drupal_set_message(t('Content Direct: Remote <i>node/' . $node->id() . '</i> does not exist.'), 'warning');
   }
 }
 
@@ -74,47 +78,57 @@ function content_direct_taxonomy_term_insert(Term $term) {
   $vid = $term->getVocabularyId();
   // Verify that the remote Vocabulary exists before attempting to create a Term.
   if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
-    drupal_set_message(t('Content Direct: Create Taxonomy Term <i>' . $term->getName() . '</i>'));
+    drupal_set_message(t('Content Direct: Create Taxonomy Term <i>%identifier</i>',
+        array('%identifier' => $term->getName())
+    ));
     $data = $pusher->getTermData($term);
     if ($data) {
       $pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
     }
   }
   else {
-    drupal_set_message(t('Content Direct: Remote vocabulary <i>' . $vid . '</i> does not exist. Term was not created.'), 'warning');
+    drupal_set_message(t('Content Direct: Remote vocabulary <i>%identifier</i> does not exist. Term was not created.',
+        array('%identifier' => $vid)
+    ), 'warning');
   }
 }
 
 /**
  * Implements hook_entity_update().
- *
  */
 function content_direct_taxonomy_term_update(Term $term) {
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   $vid = $term->getVocabularyId();
   if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
     if ($pusher->remoteEntityExists('taxonomy_term', $term->id())) {
-      drupal_set_message(t('Content Direct: Update Taxonomy Term <i>' . $term->getName() . '</i>'));
+      drupal_set_message(t('Content Direct: Update Taxonomy Term <i>%identifier</i>',
+          array('%identifier' => $term->getName())
+      ));
       $data = $pusher->getTermData($term);
       if ($data) {
         $pusher->request('patch', 'taxonomy/term/' . $term->id(), array('body' => $data));
       }
     }
     else {
-      drupal_set_message(t('Content Direct: Remote Taxonomy Term <i>' . $term->id() . '</i> does not exist. Term was not created.'), 'warning');
+      drupal_set_message(t('Content Direct: Remote Taxonomy Term <i>%identifier</i> does not exist. Term was not updated.',
+          array('%identifier' => $term->id())
+      ), 'warning');
     }
   }
   else {
-    drupal_set_message(t('Content Direct: Remote vocabulary <i>' . $vid . '</i> does not exist. Term was not created.'), 'warning');
+    drupal_set_message(t('Content Direct: Remote vocabulary <i>%identifier</i> does not exist. Term was not updated.',
+        array('%identifier' => $vid)
+    ), 'warning');
   }
 }
 
 /**
  * Implements hook_entity_delete().
- *
  */
 function content_direct_taxonomy_term_delete(Term $term) {
-  drupal_set_message(t('Content Direct: Delete Taxonomy Term <i>' . $term->getName() . '</i>'));
+  drupal_set_message(t('Content Direct: Delete Taxonomy Term <i>%identifier</i>',
+      array('%identifier' => $term->getName())
+  ));
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   $pusher->request('delete', 'taxonomy/term/' . $term->id());
 }
@@ -128,7 +142,9 @@ function content_direct_file_update(File $file) {
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   if ($pusher->remoteEntityExists('file', $file->id())) {
     // Remote file exists, update the file.
-    drupal_set_message(t('Content Direct: Update file <i>' . $file->getFilename() . '</i>'));
+    drupal_set_message(t('Content Direct: Update File <i>%identifier</i>',
+        array('%identifier' => $file->getFilename())
+    ));
     $data = $pusher->getFileData($file);
     if ($data) {
       $pusher->request('patch', 'file/' . $file->id(), array('body' => $data));
@@ -136,7 +152,9 @@ function content_direct_file_update(File $file) {
   }
   else {
     // Remote file doesn't exists, create the file.
-    drupal_set_message(t('Content Direct: Create file <i>' . $file->getFilename() . '</i>'));
+    drupal_set_message(t('Content Direct: Create File <i>%identifier</i>',
+        array('%identifier' => $file->getFilename())
+    ));
     $data = $pusher->getFileData($file);
     if ($data) {
       $pusher->request('post', 'entity/file/', array('body' => $data));
@@ -151,7 +169,9 @@ function content_direct_file_update(File $file) {
 function content_direct_file_delete(File $file) {
   // @TODO: It seems the first delete request only changes the "status" of a file on remote to temporary, and the second deletes.
   // Do I need to execute a delete twice to actually remove the file from the FS?
-  drupal_set_message(t('Content Direct: Delete file <i>' . $file->getFilename() . '</i>'));
+  drupal_set_message(t('Content Direct: Delete File <i>%identifier</i>',
+      array('%identifier' => $file->getFilename())
+    ));
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   $pusher->request('delete', 'file/' . $file->id());
 }
