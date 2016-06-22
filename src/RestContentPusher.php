@@ -399,12 +399,12 @@ class RestContentPusher implements ContentPusherInterface{
     if (!empty($request_options)) {
       $options = array_merge($options, $request_options);
     }
-    // @TODO: handle taxonomy terms that don't exist on remote
     try {
       $uri = $uri . '?_format=' . $format;
       $response = $this->httpClient->request($method, $uri, $options);
-      $status_code = $response->getStatusCode();
-      if (($status_code === 200 || $status_code === 201) && ($method != 'get' || $method != 'head')) {
+      // Log all Create, Update, and Delete requests.
+      if ($method != 'get' && $method != 'head') {
+        $status_code = $response->getStatusCode();
         drupal_set_message(t('Content Direct: %method request sent to <i>%uri</i>. Response: %status, %phrase', array('%method' => strtoupper($method), '%uri' => $uri, '%status' => $status_code, '%phrase' => $response->getReasonPhrase())), 'status');
         $this->loggerFactory->get('content_direct')
           ->notice('Request via %method request to %uri with options: %options. Got a %response_code response.',
@@ -412,10 +412,10 @@ class RestContentPusher implements ContentPusherInterface{
               '%method' => $method,
               '%uri' => $uri,
               '%options' => '<pre>' . Html::escape(print_r($options, TRUE)) . '</pre>',
-              '%response_code' => $response->getStatusCode(),
+              '%response_code' => $status_code,
             ));
-        return $response;
       }
+      return $response;
     }
 //    catch (BadResponseException $exception) {
 //      $response = $exception->getResponse();
