@@ -27,8 +27,8 @@ function content_direct_help($route_name) {
  */
 function content_direct_node_insert(Node $node) {
   if($node->isPublished()) {
-    drupal_set_message(t('Content Direct: Create Node <i>' . $node->getTitle() . '</i>'));
     $pusher = \Drupal::service('content_direct.rest_content_pusher');
+    drupal_set_message(t('Content Direct: Create Node <i>' . $node->getTitle() . '</i>'));
     $data = $pusher->getNodeData($node);
     $pusher->request('post', 'entity/node', array('body' => $data));
   }
@@ -38,7 +38,6 @@ function content_direct_node_insert(Node $node) {
  * Implements hook_node_update().
  */
 function content_direct_node_update(Node $node) {
-  // @TODO: handle a node going from published to unpublished.
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   if ($pusher->remoteEntityExists('node', $node->id())) {
     $data = $pusher->getNodeData($node);
@@ -48,7 +47,6 @@ function content_direct_node_update(Node $node) {
   else {
     drupal_set_message(t('Content Direct: Remote <i>node/' . $node->id() . '</i> does not exist.'), 'warning');
   }
-
 }
 
 
@@ -127,14 +125,22 @@ function content_direct_taxonomy_term_delete(Term $term) {
  * Update is fired any time a new file entity is created or updated.
  */
 function content_direct_file_update(File $file) {
-  // @TODO: check if remote file exists, if so try PATCH request
-  drupal_set_message(t('Content Direct: Update file <i>' . $file->getFilename() . '</i>'));
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
-  $data = $pusher->getFileData($file);
-//  dpm('file:');
-//  dpm($data);
-  if ($data) {
-    $pusher->request('post', 'entity/file/', array('body' => $data));
+  if ($pusher->remoteEntityExists('file', $file->id())) {
+    // Remote file exists, update the file.
+    drupal_set_message(t('Content Direct: Update file <i>' . $file->getFilename() . '</i>'));
+    $data = $pusher->getFileData($file);
+    if ($data) {
+      $pusher->request('patch', 'file/' . $file->id(), array('body' => $data));
+    }
+  }
+  else {
+    // Remote file doesn't exists, create the file.
+    drupal_set_message(t('Content Direct: Create file <i>' . $file->getFilename() . '</i>'));
+    $data = $pusher->getFileData($file);
+    if ($data) {
+      $pusher->request('post', 'entity/file/', array('body' => $data));
+    }
   }
 
 }
@@ -142,7 +148,7 @@ function content_direct_file_update(File $file) {
 /**
  * Implements hook_entity_delete().
  */
-function content_direct_file_delete($file) {
+function content_direct_file_delete(File $file) {
   // @TODO: It seems the first delete request only changes the "status" of a file on remote to temporary, and the second deletes.
   // Do I need to execute a delete twice to actually remove the file from the FS?
   drupal_set_message(t('Content Direct: Delete file <i>' . $file->getFilename() . '</i>'));

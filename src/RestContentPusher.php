@@ -305,11 +305,14 @@ class RestContentPusher implements ContentPusherInterface{
 
     // Get the Request URI based on current Entity type.
     switch (strtolower($entity_type)) {
-      case 'taxonomy_term':
-          $uri = is_numeric($entity_id) ? 'taxonomy/term/' . $entity_id : NULL;
-        break;
       case 'node':
         $uri = is_numeric($entity_id) ? 'node/' . $entity_id : NULL;
+        break;
+      case 'taxonomy_term':
+        $uri = is_numeric($entity_id) ? 'taxonomy/term/' . $entity_id : NULL;
+        break;
+      case 'file':
+        $uri = is_numeric($entity_id) ? 'file/' . $entity_id : NULL;
         break;
       case 'taxonomy_vocabulary':
         // Note: taxonomy_vocabulary uses a machine name rather than numeric id form $entity_id
@@ -318,7 +321,6 @@ class RestContentPusher implements ContentPusherInterface{
       default:
         return FALSE;
     }
-
     // @TODO: Change this to a head request. See: https://www.drupal.org/node/2752325
       $response = $this->request('get', $uri);
       if ($response && $response->getStatusCode() === 200) {
@@ -327,7 +329,6 @@ class RestContentPusher implements ContentPusherInterface{
       else {
         return FALSE;
       }
-
   }
 
     /**
