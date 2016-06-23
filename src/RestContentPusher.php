@@ -371,11 +371,17 @@ class RestContentPusher implements ContentPusherInterface {
    */
   public function request($method, $uri, $request_options = array()) {
     $method = strtolower($method);
-
+    //TODO: Add port settings from settings.
     $format = $this->settings->get('format');
     $header_format = 'application/' . str_replace('_', '+', $format);
+    $url_parts = array(
+      'scheme' => $this->settings->get('protocol'),
+      'host' => $this->settings->get('host'),
+      'path' => $uri,
+      'port' => $this->settings->get('port') ? $this->settings->get('port') : '80',
+    );
     $options = array(
-      'base_uri' => $this->settings->get('protocol') . '://' . $this->settings->get('host'),
+      'base_uri' => $url_parts['scheme'] . '://' . $url_parts['host'] . ':' . $url_parts['port'],
       'timeout' => 5,
       'connect_timeout' => 5,
       'auth' => array(
@@ -392,7 +398,7 @@ class RestContentPusher implements ContentPusherInterface {
       $options = array_merge($options, $request_options);
     }
     try {
-      $uri = $uri . '?_format=' . $format;
+      $uri = $url_parts['path'] . '?_format=' . $format;
       $response = $this->httpClient->request($method, $uri, $options);
       // Log all Create, Update, and Delete requests.
       if ($method != 'get' && $method != 'head') {

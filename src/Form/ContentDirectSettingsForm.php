@@ -4,6 +4,7 @@ namespace Drupal\content_direct\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * Provides a form for configuring Content Direct settings.
@@ -108,9 +109,47 @@ class ContentDirectSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Validate that the provided "Remote Site" settings are a valid HTTP accessible Drupal installation.
+    try {
+      $client = \Drupal::httpClient();
+      $url_parts = array(
+          'scheme' => $form_state->getValue('protocol'),
+          'host' => $form_state->getValue('host'),
+          'port' => $form_state->getValue('port'),
+      );
+      $uri = $url_parts['scheme'] . '://' . $url_parts['host'];
+      if (!empty($url_parts['port'])) {
+        $uri .= ':' . $url_parts['port'];
+      }
+      $request = $client->request('get', $uri);
+      $generator_header = $request->getHeaderLine('X-Generator');
+      if ($request->getStatusCode() && strpos($generator_header, 'Drupal') === FALSE) {
+        $form_state->setErrorByName('host', $this->t('<i>%host</i> is inaccessible or not a Drupal installation.',
+            array(
+                '%host' => $form_state->getValue('host'),
+            )
+        ));
+      }
+    }
+    catch (RequestException $exception) {
+      $form_state->setErrorByName('host', $this->t('<i>%host</i> is inaccessible or not a Drupal installation. %error',
+          array(
+              '%host' => $form_state->getValue('host'),
+              '%error' => $exception->getMessage(),
+          )
+      ));
+    }
+    // @TODO: Validate given authentication method against remote site.
+    // @TODO: Also validate REST settings and provide feedback if mismatched local settings.
+
+    parent::validateForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // @TODO: Validate REST settings (e.g. Formats match) and provide feedback if mismatched local settings.
-    // @TODO: After validating the remote endpoints, output message for each endpoint that failed.
     parent::submitForm($form, $form_state);
     $this->config('content_direct.settings')
       ->set('protocol', $form_state->getValue('protocol'))

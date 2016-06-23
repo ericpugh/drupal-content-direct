@@ -175,3 +175,4 @@ function content_direct_file_delete(File $file) {
   $pusher = \Drupal::service('content_direct.rest_content_pusher');
   $pusher->request('delete', 'file/' . $file->id());
 }
+
