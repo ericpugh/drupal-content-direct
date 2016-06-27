@@ -274,7 +274,11 @@ class RestContentPusher implements ContentPusherInterface {
   public function replaceHypermediaLinks($json) {
     // @TODO: can this be accomplished using setLinkDomain() in Drupal\rest\LinkManager\LinkManager or in link_domain in config?
     $local_protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === TRUE ? 'https' : 'http';
-    $find_link = $local_protocol . ':\/\/' . $_SERVER['SERVER_NAME'];
+    $domain = $this->configFactory->get('rest.settings')->get('link_domain');
+    if (empty($domain)) {
+      $domain = $_SERVER['SERVER_NAME'];
+    }
+    $find_link = $local_protocol . ':\/\/' . $domain;
     $replace_link = $this->settings->get('protocol') . ':\/\/' . $this->settings->get('host');
     return str_replace(
       $find_link,
