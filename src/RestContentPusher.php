@@ -275,8 +275,14 @@ class RestContentPusher implements ContentPusherInterface {
     // @TODO: can this be accomplished using setLinkDomain() in Drupal\rest\LinkManager\LinkManager or in link_domain in config?
     $local_protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === TRUE ? 'https' : 'http';
     $domain = $this->configFactory->get('rest.settings')->get('link_domain');
+    // Get the link_domain from server variables if REST settings aren't set.
     if (empty($domain)) {
-      $domain = $_SERVER['SERVER_NAME'];
+      if (!empty($_SERVER['SERVER_NAME'])) {
+        $domain = $_SERVER['SERVER_NAME'];
+      }
+      else {
+        $domain = $_SERVER['HTTP_HOST'];
+      }
     }
     $find_link = $local_protocol . ':\/\/' . $domain;
     $replace_link = $this->settings->get('protocol') . ':\/\/' . $this->settings->get('host');
