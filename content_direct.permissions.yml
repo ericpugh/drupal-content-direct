@@ -1,3 +1,6 @@
 administer_content_direct:
   title: 'Administer Content Direct'
   description: 'Configure Content Direct settings.'
+use_content_direct:
+  title: 'Use Content Direct'
+  description: 'Create, Update, and Delete remote content using Content Direct.'

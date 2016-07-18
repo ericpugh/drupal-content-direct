@@ -438,7 +438,7 @@ class RestContentPusher implements ContentPusherInterface {
           array(
             '%code' => $exception->getCode(),
             '%message' => $exception->getMessage(),
-            '%body' => '<pre>' . Html::escape($exception->getResponse()->getBody()) . '</pre>',
+            '%body' => '<pre>' . Html::escape($exception->getResponse()->getBody()->getContents()) . '</pre>',
           ));
       drupal_set_message(t('Content Direct: %method request failed.', array('%method' => strtoupper($method))), 'error');
       return FALSE;
