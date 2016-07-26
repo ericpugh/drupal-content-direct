@@ -23,57 +23,6 @@ function content_direct_help($route_name) {
 }
 
 /**
- * Implements hook_node_insert().
- */
-function content_direct_node_insert(Node $node) {
-  if ($node->isPublished() && \Drupal::currentUser()->hasPermission('use_content_direct')) {
-    $pusher = \Drupal::service('content_direct.rest_content_pusher');
-    drupal_set_message(t('Content Direct: Create Node <i>%identifier</i>',
-        array('%identifier' => $node->getTitle())
-    ));
-    $data = $pusher->getNodeData($node);
-    dpm('node data:');
-    dpm($data);
-    $pusher->request('post', 'entity/node', array('body' => $data));
-  }
-}
-
-/**
- * Implements hook_node_update().
- */
-function content_direct_node_update(Node $node) {
-    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-        if ($pusher->remoteEntityExists('node', $node->id())) {
-            $data = $pusher->getNodeData($node);
-            drupal_set_message(t('Content Direct: Update Node <i>%identifier</i>',
-                array('%identifier' => $node->getTitle())
-            ));
-            $pusher->request('patch', 'node/' . $node->id(), array('body' => $data));
-        } else {
-            drupal_set_message(t('Content Direct: Remote Node <i>%identifier</i> does not exist. Node was not updated.',
-                array('%identifier' => 'node/' . $node->id())
-            ), 'warning');
-        }
-    }
-}
-
-/**
- * Implements hook_node_delete().
- */
-function content_direct_node_delete(Node $node) {
-    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-        if ($pusher->remoteEntityExists('node', $node->id())) {
-            drupal_set_message(t('Content Direct: Delete Node <i>%identifier</i>',
-                array('%identifier' => $node->getTitle())
-            ));
-            $pusher->request('delete', 'node/' . $node->id());
-        }
-    }
-}
-
-/**
  * Implements hook_entity_insert().
  *
  * Update is fired any time a new term is created.

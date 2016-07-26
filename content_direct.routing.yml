@@ -9,3 +9,15 @@ content_direct.help:
   path: 'admin/help/content_direct'
   requirements:
     _permission: 'administer_content_direct'
+content_direct.node_actions:
+  path: '/node/{node}/content_direct'
+  defaults:
+    _title: 'Content Direct Actions'
+    _form: '\Drupal\content_direct\Form\ContentDirectNodeActionsForm'
+  requirements:
+    _permission: 'use_content_direct'
+  options:
+    _node_operation_route: TRUE
+    parameters:
+      node:
+        type: entity:node

@@ -5,6 +5,8 @@ type: module
 package: Web services
 configure: content_direct.settings
 dependencies:
+  - node
+  - taxonomy
   - rest
   - serialization
   - basic_auth

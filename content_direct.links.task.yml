@@ -1,0 +1,5 @@
+content_direct.node_actions:
+  route_name: content_direct.node_actions
+  title: 'Content Direct'
+  base_route: entity.node.canonical
+  weight: 100

@@ -7,12 +7,12 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\file_entity\Entity\FileEntity;
+use Drupal\node\NodeInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use Drupal\Core\Path\AliasManager;
-use Drupal\node\Entity\Node;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\file\Entity\File;
 use Drupal\Component\Utility\Html;
@@ -140,13 +140,13 @@ class RestContentPusher implements ContentPusherInterface {
   /**
    * Get request data from a Node object.
    *
-   * @param \Drupal\node\Entity\Node $node
+   * @param \Drupal\node\NodeInterface $node
    *   The Node.
    *
    * @return string
    *   Return a json string.
    */
-  public function getNodeData(Node $node) {
+  public function getNodeData(NodeInterface $node) {
     $serialized_node = $this->serializer->serialize($node, $this->settings->get('format'));
     $data = json_decode($serialized_node);
     // Remove fields which might create permissions issues on the remote.
@@ -178,13 +178,13 @@ class RestContentPusher implements ContentPusherInterface {
   /**
    * Get file entities referenced in a Node's fields.
    *
-   * @param \Drupal\node\Entity\Node $node
+   * @param \Drupal\node\NodeInterface $node
    *   The Node.
    *
    * @return array
    *   Array of file objects.
    */
-  public function getFiles(Node $node) {
+  public function getFiles(NodeInterface $node) {
     $fids = $this->connection->query("SELECT fid FROM {file_usage} WHERE type = 'node' AND id = :nid", array(':nid' => $node->id()))->fetchCol();
     return File::loadMultiple($fids);
   }
@@ -221,13 +221,13 @@ class RestContentPusher implements ContentPusherInterface {
   /**
    * Get taxonomy terms referenced in a Node's fields.
    *
-   * @param \Drupal\node\Entity\Node $node
+   * @param \Drupal\node\NodeInterface $node
    *   The Node.
    *
    * @return array
    *   Array of taxonomy term objects.
    */
-  public function getTerms(Node $node) {
+  public function getTerms(NodeInterface $node) {
     $tids = $this->connection->query('SELECT tid FROM {taxonomy_index} WHERE nid = :nid', array(':nid' => $node->id()))->fetchCol();
     return Term::loadMultiple($tids);
   }
