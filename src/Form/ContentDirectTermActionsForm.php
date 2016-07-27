@@ -5,14 +5,14 @@ namespace Drupal\content_direct\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use GuzzleHttp\Exception\RequestException;
-use Drupal\node\NodeInterface;
+use Drupal\taxonomy\TermInterface;
 use Drupal\content_direct\RestContentPusher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for executing Content Direct actions.
  */
-class ContentDirectNodeActionsForm extends FormBase {
+class ContentDirectTermActionsForm extends FormBase {
 
     /**
      * The RestContentPusher service.
@@ -22,21 +22,21 @@ class ContentDirectNodeActionsForm extends FormBase {
     protected $pusher;
 
     /**
-     * The node object
+     * The Taxonomy Term object
      *
-     * @var $node \Drupal\node\NodeInterface
+     * @var $term \Drupal\taxonomy\TermInterface
      */
-    protected $node;
+    protected $taxonomy_term;
 
     /**
-     * The node exists on remote site
+     * The Term exists on remote site
      *
      * @var $remote_exists string
      */
     protected $remote_exists;
 
     /**
-     * Constructs a ContentDirectNodeActionsForm object.
+     * Constructs a ContentDirectTermActionsForm object.
      *
      * @param \Drupal\content_direct\RestContentPusher $pusher
      *   The RestContentPusher service.
@@ -58,16 +58,16 @@ class ContentDirectNodeActionsForm extends FormBase {
      * {@inheritdoc}
      */
     public function getFormId() {
-        return 'content_direct_node_actions';
+        return 'content_direct_term_actions';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, NodeInterface $node = NULL) {
+    public function buildForm(array $form, FormStateInterface $form_state, TermInterface $taxonomy_term = NULL) {
 
-        $this->node = $node;
-        $this->remote_exists = $this->pusher->remoteEntityExists('node', $this->node->id());
+        $this->taxonomy_term = $taxonomy_term;
+        $this->remote_exists = $this->pusher->remoteEntityExists('taxonomy_term', $this->taxonomy_term->id());
         $actions = array(
             'post' => $this->t('Create'),
             'patch' => $this->t('Update'),
@@ -84,8 +84,8 @@ class ContentDirectNodeActionsForm extends FormBase {
         $form['item'] = array(
             '#type' => 'item',
             '#input' => FALSE,
-            '#markup' => $this->t('Perform Content Direct action on: %title ?',
-                array('%title' => $this->node->getTitle())),
+            '#markup' => $this->t('Perform Content Direct action on: %name ?',
+                array('%name' => $this->taxonomy_term->getName())),
         );
         $form['content_direct_actions'] = array(
             '#type' => 'radios',
@@ -95,8 +95,8 @@ class ContentDirectNodeActionsForm extends FormBase {
         );
         $form['nid'] = array(
             '#type' => 'hidden',
-            '#name' => 'nid',
-            '#value' => $this->node->id(),
+            '#name' => 'tid',
+            '#value' => $this->taxonomy_term->id(),
         );
         $form['actions']['#type'] = 'actions';
         $form['actions']['submit'] = array(
@@ -118,13 +118,19 @@ class ContentDirectNodeActionsForm extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-        // Verify that the given Node has been published.
-        if (!$this->node->isPublished()) {
-            $form_state->setErrorByName('nid', $this->t('<i>node/%nid</i> must be published before using Content Direct.',
-                array(
-                    '%nid' => $form_state->getValue('nid'),
+        // Verify that the Term's vocabulary exists remotely.
+        $vid = $this->taxonomy_term->getVocabularyId();
+        if (!$this->pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
+            $form_state->setErrorByName(
+                'tid',
+                $this->t('Vocabulary <i>%vid</i> does not exist on the remote site, <i>%term</i> cannot be created.',
+                    array(
+                        '%vid' => $vid,
+                        '%term' => $this->taxonomy_term->getName(),
+                    )
                 )
-            ));
+            );
+
         }
     }
 
@@ -133,23 +139,17 @@ class ContentDirectNodeActionsForm extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $action = $form_state->getValue('content_direct_actions');
-//        drupal_set_message(t('Content direct executed %action on %nid',
-//            array(
-//                '%action' => $action,
-//                '%nid' => $this->node->id(),
-//            ))
-//        );
         switch ($action) {
             case 'post':
-                $data = $this->pusher->getNodeData($this->node);
-                $this->pusher->request('post', 'entity/node', array('body' => $data));
+                $data = $this->pusher->getTermData($this->taxonomy_term);
+                $this->pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
                 break;
             case 'patch':
-                $data = $this->pusher->getNodeData($this->node);
-                $this->pusher->request('patch', 'node/' . $this->node->id(), array('body' => $data));
+                $data = $this->pusher->getTermData($this->taxonomy_term);
+                $this->pusher->request('patch', 'taxonomy/term/' . $this->taxonomy_term->id(), array('body' => $data));
                 break;
             case 'delete':
-                $this->pusher->request('delete', 'node/' . $this->node->id());
+                $this->pusher->request('delete', 'taxonomy/term/' . $this->taxonomy_term->id());
                 break;
         }
 
@@ -164,7 +164,7 @@ class ContentDirectNodeActionsForm extends FormBase {
      *   The current state of the form.
      */
     public function cancel(array $form, FormStateInterface $form_state) {
-        $form_state->setRedirectUrl($this->node->toUrl());
+        $form_state->setRedirectUrl($this->taxonomy_term->toUrl());
     }
 
 }

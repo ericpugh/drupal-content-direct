@@ -1,5 +1,10 @@
 content_direct.node_actions:
-  route_name: content_direct.node_actions
   title: 'Content Direct'
+  route_name: content_direct.node_actions
   base_route: entity.node.canonical
+  weight: 100
+content_direct.term_actions:
+  title: 'Content Direct'
+  route_name: content_direct.term_actions
+  base_route: entity.taxonomy_term.canonical
   weight: 100

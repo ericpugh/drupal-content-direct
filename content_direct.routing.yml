@@ -1,5 +1,5 @@
 content_direct.settings:
-  path: /admin/config/content_direct
+  path: '/admin/config/content_direct'
   defaults:
     _form: '\Drupal\content_direct\Form\ContentDirectSettingsForm'
     _title: 'Content Direct Settings'
@@ -9,6 +9,7 @@ content_direct.help:
   path: 'admin/help/content_direct'
   requirements:
     _permission: 'administer_content_direct'
+
 content_direct.node_actions:
   path: '/node/{node}/content_direct'
   defaults:
@@ -20,4 +21,17 @@ content_direct.node_actions:
     _node_operation_route: TRUE
     parameters:
       node:
-        type: entity:node
+        type: 'entity:node'
+
+content_direct.term_actions:
+  path: '/taxonomy/term/{taxonomy_term}/content_direct'
+  defaults:
+    _title: 'Content Direct Actions'
+    _form: '\Drupal\content_direct\Form\ContentDirectTermActionsForm'
+  requirements:
+    _permission: 'use_content_direct'
+  options:
+    _admin_route: TRUE
+    parameters:
+      taxonomy_term:
+        type: 'entity:taxonomy_term'

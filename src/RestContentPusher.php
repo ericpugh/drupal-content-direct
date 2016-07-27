@@ -8,12 +8,13 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\file_entity\Entity\FileEntity;
 use Drupal\node\NodeInterface;
+use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\GuzzleException;
 use Drupal\Core\Path\AliasManager;
-use Drupal\taxonomy\Entity\Term;
+use Drupal\taxonomy\TermInterface;
 use Drupal\file\Entity\File;
 use Drupal\Component\Utility\Html;
 
@@ -235,13 +236,13 @@ class RestContentPusher implements ContentPusherInterface {
   /**
    * Get request data from a Term object.
    *
-   * @param \Drupal\taxonomy\Entity\Term $term
+   * @param \Drupal\taxonomy\TermInterface $term
    *   The Term.
    *
    * @return string
    *   Return a json string.
    */
-  public function getTermData(Term $term) {
+  public function getTermData(TermInterface $term) {
     $serialized_term = $this->serializer->serialize($term, $this->settings->get('format'));
     $data = json_decode($serialized_term);
     // Remove fields which might create permissions issues on the remote.
@@ -305,9 +306,9 @@ class RestContentPusher implements ContentPusherInterface {
    *   The Entity exists
    */
   public function remoteEntityExists($entity_type, $entity_id) {
-    /* @TODO: Fix problem to be updated in core 8.2 where a request to /taxonomy/term/X?_format=json returns {"message":"unacceptable format"}
-     * see https://www.drupal.org/node/2449143
+    /* @TODO: Fix problem to be updated in core 8.2 with GET request to /taxonomy/term/X?_format=json
      * see the 8.2 fix in https://www.drupal.org/node/2730497
+     * Temporary solution is to disable the default Taxonomy Term view on remote.
      */
 
     // Get the Request URI based on current Entity type.
@@ -333,8 +334,7 @@ class RestContentPusher implements ContentPusherInterface {
         return FALSE;
     }
     // @TODO: Change this to a head request. See: https://www.drupal.org/node/2752325
-    $response = $this->request('get', $uri);
-    if ($response && $response->getStatusCode() === 200) {
+    if ($this->request('get', $uri)->getStatusCode() === 200) {
       return TRUE;
     }
     else {
@@ -374,10 +374,10 @@ class RestContentPusher implements ContentPusherInterface {
    * @see http://gsa.github.io/slate
    * @see http://guzzle.readthedocs.org/en/5.3/quickstart.html
    *
-   * @return \GuzzleHttp\Psr7\Request $response
+   * @return \GuzzleHttp\Psr7\Response $response
    *   Request object
    *
-   * @throws RequestException
+   * @throws GuzzleException
    */
   public function request($method, $uri, $request_options = array()) {
     $method = strtolower($method);
@@ -441,7 +441,7 @@ class RestContentPusher implements ContentPusherInterface {
             '%body' => '<pre>' . Html::escape($exception->getResponse()->getBody()->getContents()) . '</pre>',
           ));
       drupal_set_message(t('Content Direct: %method request failed.', array('%method' => strtoupper($method))), 'error');
-      return FALSE;
+      return $exception->getResponse();
     }
 
   }

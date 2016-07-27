@@ -27,68 +27,68 @@ function content_direct_help($route_name) {
  *
  * Update is fired any time a new term is created.
  */
-function content_direct_taxonomy_term_insert(Term $term) {
-    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-        $vid = $term->getVocabularyId();
-        // Verify that the remote Vocabulary exists before attempting to create a Term.
-        if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
-            drupal_set_message(t('Content Direct: Create Taxonomy Term <i>%identifier</i>',
-                array('%identifier' => $term->getName())
-            ));
-            $data = $pusher->getTermData($term);
-            if ($data) {
-                $pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
-            }
-        } else {
-            drupal_set_message(t('Content Direct: Remote vocabulary <i>%identifier</i> does not exist. Term was not created.',
-                array('%identifier' => $vid)
-            ), 'warning');
-        }
-    }
-}
+//function content_direct_taxonomy_term_insert(Term $term) {
+//    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
+//        $pusher = \Drupal::service('content_direct.rest_content_pusher');
+//        $vid = $term->getVocabularyId();
+//        // Verify that the remote Vocabulary exists before attempting to create a Term.
+//        if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
+//            drupal_set_message(t('Content Direct: Create Taxonomy Term <i>%identifier</i>',
+//                array('%identifier' => $term->getName())
+//            ));
+//            $data = $pusher->getTermData($term);
+//            if ($data) {
+//                $pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
+//            }
+//        } else {
+//            drupal_set_message(t('Content Direct: Remote vocabulary <i>%identifier</i> does not exist. Term was not created.',
+//                array('%identifier' => $vid)
+//            ), 'warning');
+//        }
+//    }
+//}
 
 /**
  * Implements hook_entity_update().
  */
-function content_direct_taxonomy_term_update(Term $term) {
-    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-        $vid = $term->getVocabularyId();
-        if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
-            if ($pusher->remoteEntityExists('taxonomy_term', $term->id())) {
-                drupal_set_message(t('Content Direct: Update Taxonomy Term <i>%identifier</i>',
-                    array('%identifier' => $term->getName())
-                ));
-                $data = $pusher->getTermData($term);
-                if ($data) {
-                    $pusher->request('patch', 'taxonomy/term/' . $term->id(), array('body' => $data));
-                }
-            } else {
-                drupal_set_message(t('Content Direct: Remote Taxonomy Term <i>%identifier</i> does not exist. Term was not updated.',
-                    array('%identifier' => $term->id())
-                ), 'warning');
-            }
-        } else {
-            drupal_set_message(t('Content Direct: Remote vocabulary <i>%identifier</i> does not exist. Term was not updated.',
-                array('%identifier' => $vid)
-            ), 'warning');
-        }
-    }
-}
+//function content_direct_taxonomy_term_update(Term $term) {
+//    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
+//        $pusher = \Drupal::service('content_direct.rest_content_pusher');
+//        $vid = $term->getVocabularyId();
+//        if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
+//            if ($pusher->remoteEntityExists('taxonomy_term', $term->id())) {
+//                drupal_set_message(t('Content Direct: Update Taxonomy Term <i>%identifier</i>',
+//                    array('%identifier' => $term->getName())
+//                ));
+//                $data = $pusher->getTermData($term);
+//                if ($data) {
+//                    $pusher->request('patch', 'taxonomy/term/' . $term->id(), array('body' => $data));
+//                }
+//            } else {
+//                drupal_set_message(t('Content Direct: Remote Taxonomy Term <i>%identifier</i> does not exist. Term was not updated.',
+//                    array('%identifier' => $term->id())
+//                ), 'warning');
+//            }
+//        } else {
+//            drupal_set_message(t('Content Direct: Remote vocabulary <i>%identifier</i> does not exist. Term was not updated.',
+//                array('%identifier' => $vid)
+//            ), 'warning');
+//        }
+//    }
+//}
 
 /**
  * Implements hook_entity_delete().
  */
-function content_direct_taxonomy_term_delete(Term $term) {
-    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-        drupal_set_message(t('Content Direct: Delete Taxonomy Term <i>%identifier</i>',
-            array('%identifier' => $term->getName())
-        ));
-        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-        $pusher->request('delete', 'taxonomy/term/' . $term->id());
-    }
-}
+//function content_direct_taxonomy_term_delete(Term $term) {
+//    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
+//        drupal_set_message(t('Content Direct: Delete Taxonomy Term <i>%identifier</i>',
+//            array('%identifier' => $term->getName())
+//        ));
+//        $pusher = \Drupal::service('content_direct.rest_content_pusher');
+//        $pusher->request('delete', 'taxonomy/term/' . $term->id());
+//    }
+//}
 
 /**
  * Implements hook_entity_update().
