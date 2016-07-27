@@ -8,6 +8,7 @@
 use Drupal\node\Entity\Node;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\file\Entity\File;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Implements hook_help().
@@ -139,3 +140,34 @@ function content_direct_file_delete(File $file) {
     }
 }
 
+/**
+ * Implements hook_entity_operation().
+ */
+function content_direct_entity_operation(EntityInterface $entity) {
+    $operations = array();
+    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
+        $entity_type = $entity->getEntityType()->id();
+        dpm($entity_type);
+        if ($entity_type == 'node') {
+            $operations['content_direct'] = array(
+                'title' => t('Content Direct'),
+                'weight' => 100,
+                'url' => \Drupal\Core\Url::fromRoute("content_direct.node_actions", array(
+                    $entity->getEntityTypeId() => $entity->id(),
+                )),
+            );
+        }
+        // @TODO: Not able to alter operations for taxonomy terms
+        // see: Patch expected for 8.2.x https://www.drupal.org/node/2469567
+//        elseif ($entity_type == 'taxonomy_term') {
+//            $operations['content_direct'] = array(
+//                'title' => t('Content Direct'),
+//                'weight' => 100,
+//                'url' => \Drupal\Core\Url::fromRoute("content_direct.term_actions", array(
+//                    $entity->getEntityTypeId() => $entity->id(),
+//                )),
+//            );
+//        }
+    }
+    return $operations;
+}

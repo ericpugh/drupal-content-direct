@@ -1,6 +1,0 @@
-# TODO: get this to work!
-content_direct.term_actions:
-  title: 'Content Direct'
-  group: taxonomy_term
-  route_name: content_direct.term_actions
-  weight: 100
