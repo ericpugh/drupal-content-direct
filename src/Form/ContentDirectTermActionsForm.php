@@ -2,24 +2,13 @@
 
 namespace Drupal\content_direct\Form;
 
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use GuzzleHttp\Exception\RequestException;
 use Drupal\taxonomy\TermInterface;
-use Drupal\content_direct\RestContentPusher;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for executing Content Direct actions.
  */
-class ContentDirectTermActionsForm extends FormBase {
-
-    /**
-     * The RestContentPusher service.
-     *
-     * @var $cron \Drupal\content_direct\RestContentPusher
-     */
-    protected $pusher;
+class ContentDirectTermActionsForm extends ContentDirectActionsFormBase {
 
     /**
      * The Taxonomy Term object
@@ -27,32 +16,6 @@ class ContentDirectTermActionsForm extends FormBase {
      * @var $term \Drupal\taxonomy\TermInterface
      */
     protected $taxonomy_term;
-
-    /**
-     * The Term exists on remote site
-     *
-     * @var $remote_exists string
-     */
-    protected $remote_exists;
-
-    /**
-     * Constructs a ContentDirectTermActionsForm object.
-     *
-     * @param \Drupal\content_direct\RestContentPusher $pusher
-     *   The RestContentPusher service.
-     */
-    public function __construct(RestContentPusher $pusher) {
-        $this->pusher = $pusher;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container) {
-        return new static(
-            $container->get('content_direct.rest_content_pusher')
-        );
-    }
 
     /**
      * {@inheritdoc}
@@ -65,50 +28,19 @@ class ContentDirectTermActionsForm extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, TermInterface $taxonomy_term = NULL) {
-
         $this->taxonomy_term = $taxonomy_term;
-        $this->remote_exists = $this->pusher->remoteEntityExists('taxonomy_term', $this->taxonomy_term->id());
-        $actions = array(
-            'post' => $this->t('Create'),
-            'patch' => $this->t('Update'),
-            'delete' => $this->t('Delete'),
-        );
-        // Change the available Content Direct actions depending on the existence of the entity on the remote site.
-        if ($this->remote_exists) {
-            unset($actions['post']);
-        }
-        else {
-            $actions = array('post' => $this->t('Create'));
-        }
-
+        $this->prepareForm($this->taxonomy_term);
+        $form = parent::buildForm($form, $form_state);
         $form['item'] = array(
             '#type' => 'item',
             '#input' => FALSE,
-            '#markup' => $this->t('Perform Content Direct action on: %name ?',
+            '#markup' => $this->t('Perform Content Direct action on Term: %name ?',
                 array('%name' => $this->taxonomy_term->getName())),
-        );
-        $form['content_direct_actions'] = array(
-            '#type' => 'radios',
-            '#title' => $this->t('Action'),
-            '#default_value' => key($actions),
-            '#options' => $actions,
         );
         $form['nid'] = array(
             '#type' => 'hidden',
             '#name' => 'tid',
             '#value' => $this->taxonomy_term->id(),
-        );
-        $form['actions']['#type'] = 'actions';
-        $form['actions']['submit'] = array(
-            '#type' => 'submit',
-            '#value' => $this->t('Submit'),
-            '#button_type' => 'primary',
-        );
-        $form['actions']['cancel'] = array(
-            '#type' => 'submit',
-            '#value' => $this->t('Cancel'),
-            '#submit' => array('::cancel'),
-            '#limit_validation_errors' => array(),
         );
 
         return $form;
@@ -138,8 +70,8 @@ class ContentDirectTermActionsForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $action = $form_state->getValue('content_direct_actions');
-        switch ($action) {
+        $selected_action = $form_state->getValue('content_direct_actions');
+        switch ($selected_action) {
             case 'post':
                 $data = $this->pusher->getTermData($this->taxonomy_term);
                 $this->pusher->request('post', 'entity/taxonomy_term', array('body' => $data));

@@ -6,7 +6,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\file_entity\Entity\FileEntity;
+use Drupal\file_entity\FileEntityInterface;
 use Drupal\node\NodeInterface;
 use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -15,6 +15,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Drupal\Core\Path\AliasManager;
 use Drupal\taxonomy\TermInterface;
+use Drupal\taxonomy\Entity\Term;
 use Drupal\file\Entity\File;
 use Drupal\Component\Utility\Html;
 
@@ -193,13 +194,13 @@ class RestContentPusher implements ContentPusherInterface {
   /**
    * Get request data from a File object with Base64 encoded file.
    *
-   * @param \Drupal\file_entity\Entity\FileEntity $file
+   * @param \Drupal\file_entity\FileEntityInterface $file
    *   The File.
    *
    * @return string
    *   Return a json string.
    */
-  public function getFileData(FileEntity $file) {
+  public function getFileData(FileEntityInterface $file) {
     $serialized_file = $this->serializer->serialize($file, $this->settings->get('format'));
     // Unset the data property that was set on the file object when serialized.
     unset($file->data);

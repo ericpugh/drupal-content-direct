@@ -2,24 +2,13 @@
 
 namespace Drupal\content_direct\Form;
 
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use GuzzleHttp\Exception\RequestException;
 use Drupal\node\NodeInterface;
-use Drupal\content_direct\RestContentPusher;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for executing Content Direct actions.
  */
-class ContentDirectNodeActionsForm extends FormBase {
-
-    /**
-     * The RestContentPusher service.
-     *
-     * @var $cron \Drupal\content_direct\RestContentPusher
-     */
-    protected $pusher;
+class ContentDirectNodeActionsForm extends ContentDirectActionsFormBase {
 
     /**
      * The node object
@@ -27,32 +16,6 @@ class ContentDirectNodeActionsForm extends FormBase {
      * @var $node \Drupal\node\NodeInterface
      */
     protected $node;
-
-    /**
-     * The node exists on remote site
-     *
-     * @var $remote_exists string
-     */
-    protected $remote_exists;
-
-    /**
-     * Constructs a ContentDirectNodeActionsForm object.
-     *
-     * @param \Drupal\content_direct\RestContentPusher $pusher
-     *   The RestContentPusher service.
-     */
-    public function __construct(RestContentPusher $pusher) {
-        $this->pusher = $pusher;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container) {
-        return new static(
-            $container->get('content_direct.rest_content_pusher')
-        );
-    }
 
     /**
      * {@inheritdoc}
@@ -67,48 +30,22 @@ class ContentDirectNodeActionsForm extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, NodeInterface $node = NULL) {
 
         $this->node = $node;
-        $this->remote_exists = $this->pusher->remoteEntityExists('node', $this->node->id());
-        $actions = array(
-            'post' => $this->t('Create'),
-            'patch' => $this->t('Update'),
-            'delete' => $this->t('Delete'),
-        );
-        // Change the available Content Direct actions depending on the existence of the entity on the remote site.
-        if ($this->remote_exists) {
-            unset($actions['post']);
-        }
-        else {
-            $actions = array('post' => $this->t('Create'));
-        }
-
+        $this->prepareForm($this->node);
+        $form = parent::buildForm($form, $form_state);
         $form['item'] = array(
             '#type' => 'item',
             '#input' => FALSE,
-            '#markup' => $this->t('Perform Content Direct action on: %title ?',
-                array('%title' => $this->node->getTitle())),
-        );
-        $form['content_direct_actions'] = array(
-            '#type' => 'radios',
-            '#title' => $this->t('Action'),
-            '#default_value' => key($actions),
-            '#options' => $actions,
+            '#markup' => $this->t('Perform Content Direct action on %content_type: <i>%title</i>?',
+                array(
+                    '%content_type' => $this->node->getType(),
+                    '%title' => $this->node->getTitle(),
+                )
+            ),
         );
         $form['nid'] = array(
             '#type' => 'hidden',
             '#name' => 'nid',
             '#value' => $this->node->id(),
-        );
-        $form['actions']['#type'] = 'actions';
-        $form['actions']['submit'] = array(
-            '#type' => 'submit',
-            '#value' => $this->t('Submit'),
-            '#button_type' => 'primary',
-        );
-        $form['actions']['cancel'] = array(
-            '#type' => 'submit',
-            '#value' => $this->t('Cancel'),
-            '#submit' => array('::cancel'),
-            '#limit_validation_errors' => array(),
         );
 
         return $form;
@@ -132,14 +69,8 @@ class ContentDirectNodeActionsForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $action = $form_state->getValue('content_direct_actions');
-//        drupal_set_message(t('Content direct executed %action on %nid',
-//            array(
-//                '%action' => $action,
-//                '%nid' => $this->node->id(),
-//            ))
-//        );
-        switch ($action) {
+        $selected_action = $form_state->getValue('content_direct_actions');
+        switch ($selected_action) {
             case 'post':
                 $data = $this->pusher->getNodeData($this->node);
                 $this->pusher->request('post', 'entity/node', array('body' => $data));

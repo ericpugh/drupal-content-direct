@@ -5,9 +5,6 @@
  * Content Direct module file.
  */
 
-use Drupal\node\Entity\Node;
-use Drupal\taxonomy\Entity\Term;
-use Drupal\file\Entity\File;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
@@ -24,130 +21,12 @@ function content_direct_help($route_name) {
 }
 
 /**
- * Implements hook_entity_insert().
- *
- * Update is fired any time a new term is created.
- */
-//function content_direct_taxonomy_term_insert(Term $term) {
-//    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-//        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-//        $vid = $term->getVocabularyId();
-//        // Verify that the remote Vocabulary exists before attempting to create a Term.
-//        if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
-//            drupal_set_message(t('Content Direct: Create Taxonomy Term <i>%identifier</i>',
-//                array('%identifier' => $term->getName())
-//            ));
-//            $data = $pusher->getTermData($term);
-//            if ($data) {
-//                $pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
-//            }
-//        } else {
-//            drupal_set_message(t('Content Direct: Remote vocabulary <i>%identifier</i> does not exist. Term was not created.',
-//                array('%identifier' => $vid)
-//            ), 'warning');
-//        }
-//    }
-//}
-
-/**
- * Implements hook_entity_update().
- */
-//function content_direct_taxonomy_term_update(Term $term) {
-//    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-//        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-//        $vid = $term->getVocabularyId();
-//        if ($pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
-//            if ($pusher->remoteEntityExists('taxonomy_term', $term->id())) {
-//                drupal_set_message(t('Content Direct: Update Taxonomy Term <i>%identifier</i>',
-//                    array('%identifier' => $term->getName())
-//                ));
-//                $data = $pusher->getTermData($term);
-//                if ($data) {
-//                    $pusher->request('patch', 'taxonomy/term/' . $term->id(), array('body' => $data));
-//                }
-//            } else {
-//                drupal_set_message(t('Content Direct: Remote Taxonomy Term <i>%identifier</i> does not exist. Term was not updated.',
-//                    array('%identifier' => $term->id())
-//                ), 'warning');
-//            }
-//        } else {
-//            drupal_set_message(t('Content Direct: Remote vocabulary <i>%identifier</i> does not exist. Term was not updated.',
-//                array('%identifier' => $vid)
-//            ), 'warning');
-//        }
-//    }
-//}
-
-/**
- * Implements hook_entity_delete().
- */
-//function content_direct_taxonomy_term_delete(Term $term) {
-//    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-//        drupal_set_message(t('Content Direct: Delete Taxonomy Term <i>%identifier</i>',
-//            array('%identifier' => $term->getName())
-//        ));
-//        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-//        $pusher->request('delete', 'taxonomy/term/' . $term->id());
-//    }
-//}
-
-/**
- * Implements hook_entity_update().
- *
- * Update is fired any time a new file entity is created or updated.
- */
-function content_direct_file_update(File $file) {
-    if (\Drupal::currentUser()->hasPermission('use_content_direct')){
-        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-        if ($pusher->remoteEntityExists('file', $file->id())) {
-            // Remote file exists, update the file.
-            drupal_set_message(t('Content Direct: Update File <i>%identifier</i>',
-                array('%identifier' => $file->getFilename())
-            ));
-            $data = $pusher->getFileData($file);
-            if ($data) {
-                $pusher->request('patch', 'file/' . $file->id(), array('body' => $data));
-            }
-        }
-        else {
-            // Remote file doesn't exists, create the file.
-            drupal_set_message(t('Content Direct: Create File <i>%identifier</i>',
-                array('%identifier' => $file->getFilename())
-            ));
-            $data = $pusher->getFileData($file);
-            dpm('file data:');
-            dpm($data);
-
-            if ($data) {
-                $pusher->request('post', 'entity/file/', array('body' => $data));
-            }
-        }
-    }
-}
-
-/**
- * Implements hook_entity_delete().
- */
-function content_direct_file_delete(File $file) {
-    if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
-        // @TODO: It seems the first delete request only changes the "status" of a file on remote to temporary, and the second deletes.
-        // Do I need to execute a delete twice to actually remove the file from the FS?
-        drupal_set_message(t('Content Direct: Delete File <i>%identifier</i>',
-            array('%identifier' => $file->getFilename())
-        ));
-        $pusher = \Drupal::service('content_direct.rest_content_pusher');
-        $pusher->request('delete', 'file/' . $file->id());
-    }
-}
-
-/**
  * Implements hook_entity_operation().
  */
 function content_direct_entity_operation(EntityInterface $entity) {
     $operations = array();
     if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
         $entity_type = $entity->getEntityType()->id();
-        dpm($entity_type);
         if ($entity_type == 'node') {
             $operations['content_direct'] = array(
                 'title' => t('Content Direct'),
@@ -157,6 +36,16 @@ function content_direct_entity_operation(EntityInterface $entity) {
                 )),
             );
         }
+        elseif ($entity_type == 'file') {
+            $operations['content_direct'] = array(
+                'title' => t('Content Direct'),
+                'weight' => 100,
+                'url' => \Drupal\Core\Url::fromRoute("content_direct.file_actions", array(
+                    $entity->getEntityTypeId() => $entity->id(),
+                )),
+            );
+        }
+
         // @TODO: Not able to alter operations for taxonomy terms
         // see: Patch expected for 8.2.x https://www.drupal.org/node/2469567
 //        elseif ($entity_type == 'taxonomy_term') {

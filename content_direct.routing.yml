@@ -35,3 +35,16 @@ content_direct.term_actions:
     parameters:
       taxonomy_term:
         type: 'entity:taxonomy_term'
+
+content_direct.file_actions:
+  path: '/file/{file}/content_direct'
+  defaults:
+    _title: 'Content Direct Actions'
+    _form: '\Drupal\content_direct\Form\ContentDirectFileActionsForm'
+  requirements:
+    _permission: 'use_content_direct'
+  options:
+    _admin_route: TRUE
+    parameters:
+      taxonomy_term:
+        type: 'entity:file'
