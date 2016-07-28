@@ -3,6 +3,7 @@
 namespace Drupal\content_direct;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -139,7 +140,27 @@ class RestContentPusher implements ContentPusherInterface {
     $this->token = $this->getToken();
   }
 
-  /**
+    /**
+     * Check if an Entity references other entities via entity reference fields.
+     *
+     * @param \Drupal\Core\Entity\EntityInterface $entity
+     *   The Entity.
+     *
+     * @return bool
+     *   Return true if given Entity references term or file entities .
+     */
+    public function referencesEntities(EntityInterface $entity) {
+        $references = $entity->referencedEntities();
+        foreach ($references as $reference) {
+            $type = $reference->getEntityTypeId();
+            if ($type == 'taxonomy_term' || $type == 'file') {
+                return TRUE;
+            }
+        }
+        return FALSE;
+    }
+
+    /**
    * Get request data from a Node object.
    *
    * @param \Drupal\node\NodeInterface $node
@@ -411,9 +432,10 @@ class RestContentPusher implements ContentPusherInterface {
     try {
       $uri = $url_parts['path'] . '?_format=' . $format;
       $response = $this->httpClient->request($method, $uri, $options);
-      // Log all Create, Update, and Delete requests.
+      // Log and output message for all Create, Update, and Delete requests.
       if ($method != 'get' && $method != 'head') {
         $status_code = $response->getStatusCode();
+          // Output the response message to user
         drupal_set_message(t('Content Direct: %method request sent to <i>%uri</i>. Response: %status, %phrase',
           array(
             '%method' => strtoupper($method),

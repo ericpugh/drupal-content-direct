@@ -47,7 +47,14 @@ class ContentDirectNodeActionsForm extends ContentDirectActionsFormBase {
             '#name' => 'nid',
             '#value' => $this->node->id(),
         );
-
+        if (key_exists('post', $this->actions)) {
+            // Output a informational warning before creating a node that references other entities
+            if ($this->pusher->referencesEntities($this->node)) {
+                drupal_set_message($this->t('Notice: This Node contains references to other entities like
+                    <em>Taxonomy Terms</em> or <em>Files</em>, which <strong>may</strong> need to be created on the 
+                    destination site to before they can be associated with the current Node.'), 'warning');
+            }
+        }
         return $form;
     }
 
@@ -83,7 +90,6 @@ class ContentDirectNodeActionsForm extends ContentDirectActionsFormBase {
                 $this->pusher->request('delete', 'node/' . $this->node->id());
                 break;
         }
-
     }
 
     /**
