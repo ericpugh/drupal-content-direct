@@ -8,7 +8,7 @@ use Drupal\taxonomy\TermInterface;
 /**
  * Provides a form for executing Content Direct actions.
  */
-class ContentDirectTermActionsForm extends ContentDirectActionsFormBase {
+class TermActionsForm extends ActionsFormBase {
 
     /**
      * The Taxonomy Term object

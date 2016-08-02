@@ -1,20 +1,42 @@
-content_direct.settings:
-  path: '/admin/config/content_direct'
+# Configuration Entity Forms.
+entity.remote_site.collection:
+  path: '/admin/config/content_direct/remote_site'
   defaults:
-    _form: '\Drupal\content_direct\Form\ContentDirectSettingsForm'
-    _title: 'Content Direct Settings'
-  requirements:
-    _permission: 'administer_content_direct'
-content_direct.help:
-  path: 'admin/help/content_direct'
+    _entity_list: 'remote_site'
+    _title: 'Content Direct: Remote Sites'
   requirements:
     _permission: 'administer_content_direct'
 
+entity.remote_site.add_form:
+  path: '/admin/config/content_direct/remote_site/add'
+  defaults:
+    _entity_form: 'remote_site.add'
+    _title: 'Add Remote Site'
+  requirements:
+    _permission: 'administer_content_direct'
+
+entity.remote_site.edit_form:
+  path: '/admin/config/content_direct/remote_site/{remote_site}'
+  defaults:
+    _entity_form: 'remote_site.edit'
+    _title: 'Edit Remote Site'
+  requirements:
+    _permission: 'administer_content_direct'
+
+entity.remote_site.delete_form:
+  path: '/admin/config/content_direct/remote_site/{remote_site}/delete'
+  defaults:
+    _entity_form: 'remote_site.delete'
+    _title: 'Delete Remote Site'
+  requirements:
+    _permission: 'administer_content_direct'
+
+# Local Tasks.
 content_direct.node_actions:
   path: '/node/{node}/content_direct'
   defaults:
     _title: 'Content Direct Actions'
-    _form: '\Drupal\content_direct\Form\ContentDirectNodeActionsForm'
+    _form: '\Drupal\content_direct\Form\NodeActionsForm'
   requirements:
     _permission: 'use_content_direct'
   options:
@@ -27,7 +49,7 @@ content_direct.term_actions:
   path: '/taxonomy/term/{taxonomy_term}/content_direct'
   defaults:
     _title: 'Content Direct Actions'
-    _form: '\Drupal\content_direct\Form\ContentDirectTermActionsForm'
+    _form: '\Drupal\content_direct\Form\TermActionsForm'
   requirements:
     _permission: 'use_content_direct'
   options:
@@ -40,7 +62,7 @@ content_direct.file_actions:
   path: '/file/{file}/content_direct'
   defaults:
     _title: 'Content Direct Actions'
-    _form: '\Drupal\content_direct\Form\ContentDirectFileActionsForm'
+    _form: '\Drupal\content_direct\Form\FileActionsForm'
   requirements:
     _permission: 'use_content_direct'
   options:

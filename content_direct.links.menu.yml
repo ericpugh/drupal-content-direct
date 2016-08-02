@@ -1,5 +1,5 @@
-content_direct.settings:
+content_direct.remote_sites_menu_link:
   title: 'Content Direct'
-  description: 'Configure and customize the Content Direct module.'
-  route_name: content_direct.settings
+  description: 'Add remote sites for the Content Direct module.'
+  route_name: entity.remote_site.collection
   parent: system.admin_config_services

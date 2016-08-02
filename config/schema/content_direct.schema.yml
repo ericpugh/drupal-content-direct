@@ -1,7 +1,13 @@
-content_direct.settings:
-  type: config_object
-  label: 'Content Direct Settings'
+content_direct.remote_site.*:
+  type: config_entity
+  label: 'Remote Site config'
   mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
     protocol:
       type: string
       label: 'Protocol'
@@ -20,6 +26,3 @@ content_direct.settings:
     password:
       type: string
       label: 'Password'
-#    token:
-#      type: string
-#      label: 'CSRF Token'

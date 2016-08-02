@@ -1,0 +1,5 @@
+content_direct.add_remote_site_link_action:
+  route_name: 'entity.remote_site.add_form'
+  title: 'Add Remote Site'
+  appears_on:
+    - entity.remote_site.collection

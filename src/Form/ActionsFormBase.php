@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a form for executing Content Direct actions.
  */
-class ContentDirectActionsFormBase extends FormBase {
+class ActionsFormBase extends FormBase {
 
     /**
      * The RestContentPusher service.
@@ -79,14 +79,14 @@ class ContentDirectActionsFormBase extends FormBase {
      *   The Entity.
      */
     public function prepareForm(EntityInterface $entity) {
-        $this->remote_exists = $this->pusher->remoteEntityExists($entity->getEntityTypeId(), $entity->id());
+        //$this->remote_exists = $this->pusher->remoteEntityExists($entity->getEntityTypeId(), $entity->id());
         // Change the available Content Direct actions depending on the existence of the entity on the remote site.
-        if ($this->remote_exists) {
-            unset($this->actions['post']);
-        }
-        else {
-            $this->actions = array('post' => $this->t('Create'));
-        }
+//        if ($this->remote_exists) {
+//            unset($this->actions['post']);
+//        }
+//        else {
+//            $this->actions = array('post' => $this->t('Create'));
+//        }
     }
 
     /**

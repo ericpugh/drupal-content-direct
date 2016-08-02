@@ -9,7 +9,7 @@ use Drupal\file_entity\FileEntityInterface;
 /**
  * Provides a form for executing Content Direct actions.
  */
-class ContentDirectFileActionsForm extends ContentDirectActionsFormBase {
+class FileActionsForm extends ActionsFormBase {
 
     /**
      * The FileEntity object

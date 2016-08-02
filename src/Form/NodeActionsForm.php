@@ -8,7 +8,7 @@ use Drupal\node\NodeInterface;
 /**
  * Provides a form for executing Content Direct actions.
  */
-class ContentDirectNodeActionsForm extends ContentDirectActionsFormBase {
+class NodeActionsForm extends ActionsFormBase {
 
     /**
      * The node object
