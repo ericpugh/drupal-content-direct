@@ -164,7 +164,7 @@ class RestContentPusher implements ContentPusherInterface {
      *   Return pusher service after setting the remote site.
      */
     public function setRemoteSite(RemoteSiteInterface $remoteSite) {
-      $this->remoteSite = $remoteSite;
+        $this->remoteSite = $remoteSite;
         $this->token = $this->setToken();
         return $this;
     }

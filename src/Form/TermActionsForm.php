@@ -50,6 +50,8 @@ class TermActionsForm extends ActionsFormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
         // Verify that the Term's vocabulary exists remotely.
+        $remote_site_id = $form_state->getValue('remote_site');
+        $this->pusher->setRemoteSiteByName($remote_site_id);
         $vid = $this->taxonomy_term->getVocabularyId();
         if (!$this->pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
             $form_state->setErrorByName(
