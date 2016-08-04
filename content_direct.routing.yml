@@ -1,9 +1,26 @@
+# Admin
+content_direct.admin_config:
+  path: '/admin/config/content_direct'
+  defaults:
+    _controller: '\Drupal\content_direct\Controller\ContentDirectController::adminMenuPage'
+    _title: 'Content Direct'
+  requirements:
+    _permission: 'administer_content_direct'
+
+content_direct.action_log:
+  path: '/admin/config/content_direct/action_log'
+  defaults:
+    _entity_list: 'action_log'
+    _title: 'Action Log'
+  requirements:
+    _permission: 'administer_content_direct'
+
 # Configuration Entity Forms.
 entity.remote_site.collection:
   path: '/admin/config/content_direct/remote_site'
   defaults:
     _entity_list: 'remote_site'
-    _title: 'Content Direct: Remote Sites'
+    _title: 'Remote Sites'
   requirements:
     _permission: 'administer_content_direct'
 
@@ -30,6 +47,14 @@ entity.remote_site.delete_form:
     _title: 'Delete Remote Site'
   requirements:
     _permission: 'administer_content_direct'
+
+entity.action_log.delete_form:
+  path: '/admin/config/content_direct/action_log/{action_log}/delete'
+  defaults:
+    _entity_form: 'action_log.delete'
+    _title: 'Delete Action Log'
+  requirements:
+    _permission: 'use_content_direct'
 
 # Local Tasks.
 content_direct.node_actions:

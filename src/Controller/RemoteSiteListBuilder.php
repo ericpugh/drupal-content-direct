@@ -11,6 +11,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a listing of Remote Sites.
+ *
+ * @ingroup content_direct
  */
 class RemoteSiteListBuilder extends ConfigEntityListBuilder {
 

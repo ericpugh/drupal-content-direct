@@ -29,7 +29,6 @@ class TermActionsForm extends ActionsFormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, TermInterface $taxonomy_term = NULL) {
         $this->taxonomy_term = $taxonomy_term;
-        $this->prepareForm($this->taxonomy_term);
         $form = parent::buildForm($form, $form_state);
         $form['item'] = array(
             '#type' => 'item',
@@ -71,18 +70,25 @@ class TermActionsForm extends ActionsFormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $selected_action = $form_state->getValue('content_direct_actions');
+        $remote_site_id = $form_state->getValue('remote_site');
+        $this->pusher->setRemoteSiteByName($remote_site_id);
+        $request = NULL;
         switch ($selected_action) {
             case 'post':
                 $data = $this->pusher->getTermData($this->taxonomy_term);
-                $this->pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
+                $request = $this->pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
                 break;
             case 'patch':
                 $data = $this->pusher->getTermData($this->taxonomy_term);
-                $this->pusher->request('patch', 'taxonomy/term/' . $this->taxonomy_term->id(), array('body' => $data));
+                $request = $this->pusher->request('patch', 'taxonomy/term/' . $this->taxonomy_term->id(), array('body' => $data));
                 break;
             case 'delete':
-                $this->pusher->request('delete', 'taxonomy/term/' . $this->taxonomy_term->id());
+                $request = $this->pusher->request('delete', 'taxonomy/term/' . $this->taxonomy_term->id());
                 break;
+        }
+        if ($request) {
+            // Create an ActionLog Entity to track Content Direct requests made.
+            $this->createActionLog($this->taxonomy_term->id(), 'taxonomy_term', $remote_site_id, $selected_action);
         }
 
     }

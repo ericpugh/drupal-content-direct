@@ -1,5 +1,16 @@
-content_direct.remote_sites_menu_link:
+content_direct.admin_config_menu_link:
   title: 'Content Direct'
+  description: 'Configure the Content Direct module.'
+  route_name: content_direct.admin_config
+  parent: system.admin_config_services
+content_direct.remote_sites_menu_link:
+  title: 'Remote Sites'
   description: 'Add remote sites for the Content Direct module.'
   route_name: entity.remote_site.collection
-  parent: system.admin_config_services
+  parent: content_direct.admin_config_menu_link
+content_direct.action_log_menu_link:
+  title: 'Action Log'
+  description: 'Content Direct action log.'
+  route_name: content_direct.action_log
+  parent: content_direct.admin_config_menu_link
+  weight: 100
