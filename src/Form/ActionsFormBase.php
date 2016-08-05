@@ -100,7 +100,7 @@ class ActionsFormBase extends FormBase {
      *
      * @return \Drupal\content_direct\Entity\ActionLog
      */
-    public function createActionLog($entity_id, $entity_type, $remote_site_id, $action) {
+    public function createActionLog($entity_id, $entity_type, $remote_site_id, $action, $note = NULL) {
         // Check if
         $query = \Drupal::entityQuery('action_log')
             ->condition('target_entity_id', $entity_id)
@@ -119,6 +119,7 @@ class ActionsFormBase extends FormBase {
                 'target_entity_type' => $entity_type,
                 'remote_site' => $remote_site_id,
                 'action' => $action,
+                'note' => $note,
             );
             return ActionLog::create($values)->save();
 
@@ -143,7 +144,7 @@ class ActionsFormBase extends FormBase {
                 '#title' => $this->t('Configure Remote Sites'),
                 '#type' => 'link',
                 '#url' => Url::fromRoute('entity.remote_site.collection'),
-                '#weight' => 99,
+                '#weight' => 98,
             ];
 
         }
@@ -153,10 +154,9 @@ class ActionsFormBase extends FormBase {
             '#options' => $options,
             '#required' => TRUE,
             '#description' => $remote_site_description,
-            '#weight' => 98,
+            '#weight' => 97,
         ];
-
-        // Add cancel/submit buttons and actions radios for all Content Direct actions forms.
+        // Add action radios for all Content Direct actions forms.
         $form['content_direct_actions'] = array(
             '#type' => 'radios',
             '#title' => $this->t('Action'),
@@ -164,6 +164,14 @@ class ActionsFormBase extends FormBase {
             '#options' => $this->actions,
             '#weight' => 100,
         );
+        $form['note'] = [
+            '#type' => 'textarea',
+            '#title' => $this->t('Note'),
+            '#rows' => 2,
+            '#cols' => 5,
+            '#weight' => 100,
+        ];
+        // Submit/Cancel buttons.
         $form['actions']['#type'] = 'actions';
         $form['actions']['submit'] = array(
             '#type' => 'submit',

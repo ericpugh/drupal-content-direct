@@ -80,6 +80,7 @@ class ActionLogListBuilder extends EntityListBuilder {
         $header['action'] = $this->t('Action');
         $header['content'] = $this->t('Content');
         $header['remote_site'] = $this->t('Remote Site');
+        $header['note'] = $this->t('Note');
 
         return $header + parent::buildHeader();
     }
@@ -100,8 +101,8 @@ class ActionLogListBuilder extends EntityListBuilder {
             '#url' => $target_entity->toUrl(),
             '#title' => $target_entity->label(),
         );
-
         $row['remote_site'] = $entity->remote_site->value;
+        $row['note'] = $entity->note->value;
 
         return $row + parent::buildRow($entity);
     }

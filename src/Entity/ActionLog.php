@@ -120,23 +120,7 @@ class ActionLog extends ContentEntityBase implements ActionLogInterface {
             ->setLabel(t('User'))
             ->setDescription(t('The Name of the associated user.'))
             ->setSetting('target_type', 'user')
-            ->setSetting('handler', 'default')
-            ->setDisplayOptions('view', array(
-                'label' => 'above',
-                'type' => 'author',
-                'weight' => -3,
-            ))
-            ->setDisplayOptions('form', array(
-                'type' => 'entity_reference_autocomplete',
-                'settings' => array(
-                    'match_operator' => 'CONTAINS',
-                    'size' => 60,
-                    'placeholder' => '',
-                ),
-                'weight' => -3,
-            ))
-            ->setDisplayConfigurable('form', TRUE)
-            ->setDisplayConfigurable('view', TRUE);
+            ->setSetting('handler', 'default');
 
         // Target Entity Type field.
         $fields['target_entity_type'] = BaseFieldDefinition::create('string')
@@ -146,18 +130,7 @@ class ActionLog extends ContentEntityBase implements ActionLogInterface {
                 'default_value' => '',
                 'max_length' => 255,
                 'text_processing' => 0,
-            ))
-            ->setDisplayOptions('view', array(
-                'label' => 'above',
-                'type' => 'string',
-                'weight' => -5,
-            ))
-            ->setDisplayOptions('form', array(
-                'type' => 'string_textfield',
-                'weight' => -5,
-            ))
-            ->setDisplayConfigurable('form', TRUE)
-            ->setDisplayConfigurable('view', TRUE);
+            ));
 
         // Target Entity ID.
         $fields['target_entity_id'] = BaseFieldDefinition::create('string')
@@ -167,18 +140,7 @@ class ActionLog extends ContentEntityBase implements ActionLogInterface {
                 'default_value' => '',
                 'max_length' => 255,
                 'text_processing' => 0,
-            ))
-            ->setDisplayOptions('view', array(
-                'label' => 'above',
-                'type' => 'string',
-                'weight' => -5,
-            ))
-            ->setDisplayOptions('form', array(
-                'type' => 'string_textfield',
-                'weight' => -5,
-            ))
-            ->setDisplayConfigurable('form', TRUE)
-            ->setDisplayConfigurable('view', TRUE);
+            ));
 
         // The Content Direct action.
         $fields['action'] = BaseFieldDefinition::create('string')
@@ -188,18 +150,7 @@ class ActionLog extends ContentEntityBase implements ActionLogInterface {
                 'default_value' => '',
                 'max_length' => 255,
                 'text_processing' => 0,
-            ))
-            ->setDisplayOptions('view', array(
-                'label' => 'above',
-                'type' => 'string',
-                'weight' => -5,
-            ))
-            ->setDisplayOptions('form', array(
-                'type' => 'string_textfield',
-                'weight' => -5,
-            ))
-            ->setDisplayConfigurable('form', TRUE)
-            ->setDisplayConfigurable('view', TRUE);
+            ));
 
         // @TODO: Change this to entity reference?
         // The Remote Site.
@@ -210,18 +161,12 @@ class ActionLog extends ContentEntityBase implements ActionLogInterface {
                 'default_value' => '',
                 'max_length' => 255,
                 'text_processing' => 0,
-            ))
-            ->setDisplayOptions('view', array(
-                'label' => 'above',
-                'type' => 'string',
-                'weight' => -5,
-            ))
-            ->setDisplayOptions('form', array(
-                'type' => 'string_textfield',
-                'weight' => -5,
-            ))
-            ->setDisplayConfigurable('form', TRUE)
-            ->setDisplayConfigurable('view', TRUE);
+            ));
+
+        // Note field.
+        $fields['note'] = BaseFieldDefinition::create('string_long')
+            ->setLabel(t('Note'))
+            ->setDescription(t('Briefly describe the changes you have made.'));
 
         $fields['langcode'] = BaseFieldDefinition::create('language')
             ->setLabel(t('Language code'))
