@@ -10,6 +10,7 @@ use Drupal\content_direct\RestContentPusher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\content_direct\Entity\ActionLog;
 use Drupal\Core\Entity\Query\QueryFactory;
+use Drupal\Core\Url;
 
 /**
  * Provides a form for executing Content Direct actions.
@@ -109,7 +110,7 @@ class ActionsFormBase extends FormBase {
         $existing_logs = $query->execute();
         if ($existing_logs) {
             // Update existing action log.
-            ActionLog::load(end($existing_logs))->save();
+            ActionLog::load(end($existing_logs))->setChangedTime(time())->save();
         }
         else {
             // Create a new action log.
@@ -134,16 +135,25 @@ class ActionsFormBase extends FormBase {
         foreach ($remote_sites as $name => $site) {
             $options[$name] = $site->label();
         }
+        $remote_site_description = $this->t('Select the target remote site.');
         if (empty($options)) {
-            $options[''] = $this->t('No remote sites defined.');
+            $options[''] = $remote_site_description = $this->t('No remote sites defined.');
+            // Add a link so the user can create a Remote Site.
+            $form['remote_sites_link'] = [
+                '#title' => $this->t('Configure Remote Sites'),
+                '#type' => 'link',
+                '#url' => Url::fromRoute('entity.remote_site.collection'),
+                '#weight' => 99,
+            ];
+
         }
         $form['remote_site'] = [
             '#type' => 'select',
             '#title' => $this->t('Remote Site'),
             '#options' => $options,
             '#required' => TRUE,
-            '#description' => $this->t('Select the target remote site.'),
-            '#weight' => 99,
+            '#description' => $remote_site_description,
+            '#weight' => 98,
         ];
 
         // Add cancel/submit buttons and actions radios for all Content Direct actions forms.
