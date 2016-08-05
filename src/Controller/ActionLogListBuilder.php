@@ -2,6 +2,7 @@
 
 namespace Drupal\content_direct\Controller;
 
+use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -77,8 +78,7 @@ class ActionLogListBuilder extends EntityListBuilder {
         $header['date'] = $this->t('Date');
         $header['user'] = $this->t('User');
         $header['action'] = $this->t('Action');
-        $header['target_entity_id'] = $this->t('Entity ID');
-        $header['target_entity_type'] = $this->t('Entity Type');
+        $header['content'] = $this->t('Content');
         $header['remote_site'] = $this->t('Remote Site');
 
         return $header + parent::buildHeader();
@@ -94,8 +94,8 @@ class ActionLogListBuilder extends EntityListBuilder {
             '#account' => $entity->getOwner(),
         );
         $row['action'] = $entity->action->value;
-        $row['target_entity_id'] = $entity->target_entity_id->value;
-        $row['target_entity_type'] = $entity->target_entity_type->value;
+        $target_entity = entity_load($entity->target_entity_type->value, $entity->target_entity_id->value);
+        $row['content'] = $target_entity->toLink()->toString();
         $row['remote_site'] = $entity->remote_site->value;
 
         return $row + parent::buildRow($entity);
