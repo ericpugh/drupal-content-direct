@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Entity\Query\QueryFactory;
 
 /**
  * Provides a listing of logged actions.
@@ -33,6 +34,13 @@ class ActionLogListBuilder extends EntityListBuilder {
     protected $dateFormatter;
 
     /**
+     * The entity query.
+     *
+     * @var \Drupal\Core\Entity\Query\QueryFactory
+     */
+    protected $entityQuery;
+
+    /**
      * {@inheritdoc}
      */
     public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
@@ -40,7 +48,8 @@ class ActionLogListBuilder extends EntityListBuilder {
             $entity_type,
             $container->get('entity.manager')->getStorage($entity_type->id()),
             $container->get('url_generator'),
-            $container->get('date.formatter')
+            $container->get('date.formatter'),
+            $container->get('entity.query')
         );
     }
 
@@ -54,10 +63,28 @@ class ActionLogListBuilder extends EntityListBuilder {
      * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
      *   The url generator.
      */
-    public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, UrlGeneratorInterface $url_generator, DateFormatterInterface $date_formatter) {
+    public function __construct(
+            EntityTypeInterface $entity_type,
+            EntityStorageInterface $storage,
+            UrlGeneratorInterface $url_generator,
+            DateFormatterInterface $date_formatter,
+            QueryFactory $entity_query) {
         parent::__construct($entity_type, $storage);
         $this->urlGenerator = $url_generator;
         $this->dateFormatter = $date_formatter;
+        $this->entityQuery = $entity_query;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function load() {
+        $entity_query = $this->entityQuery->get('action_log');
+        $header = $this->buildHeader();
+        $entity_query->pager(50);
+        $entity_query->tableSort($header);
+        $ids = $entity_query->execute();
+        return $this->storage->loadMultiple($ids);
     }
 
     /**
@@ -75,9 +102,17 @@ class ActionLogListBuilder extends EntityListBuilder {
      * {@inheritdoc}
      */
     public function buildHeader() {
-        $header['date'] = $this->t('Date');
+        $header['date'] = [
+            'data' => $this->t('Date'),
+            'field' => 'changed',
+            'specifier' => 'changed',
+        ];
         $header['user'] = $this->t('User');
-        $header['action'] = $this->t('Action');
+        $header['action'] = [
+            'data' => $this->t('Action'),
+            'field' => 'action',
+            'specifier' => 'action',
+        ];
         $header['content'] = $this->t('Content');
         $header['remote_site'] = $this->t('Remote Site');
         $header['note'] = $this->t('Note');
