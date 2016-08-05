@@ -95,7 +95,12 @@ class ActionLogListBuilder extends EntityListBuilder {
         );
         $row['action'] = $entity->action->value;
         $target_entity = entity_load($entity->target_entity_type->value, $entity->target_entity_id->value);
-        $row['content'] = $target_entity->toLink()->toString();
+        $row['content']['data'] = array(
+            '#type' => 'link',
+            '#url' => $target_entity->toUrl(),
+            '#title' => $target_entity->label(),
+        );
+
         $row['remote_site'] = $entity->remote_site->value;
 
         return $row + parent::buildRow($entity);
