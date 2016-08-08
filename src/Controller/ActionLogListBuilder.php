@@ -2,7 +2,6 @@
 
 namespace Drupal\content_direct\Controller;
 
-use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -11,6 +10,8 @@ use Drupal\Core\Routing\UrlGeneratorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\content_direct\RestContentPusher;
 
 /**
  * Provides a listing of logged actions.
@@ -41,6 +42,20 @@ class ActionLogListBuilder extends EntityListBuilder {
     protected $entityQuery;
 
     /**
+     * The route match service.
+     *
+     * @var \Drupal\Core\Routing\RouteMatchInterface;
+     */
+    protected $routeMatch;
+
+    /**
+     * The Target Entity ID used to filter list.
+     *
+     * @var string $entity_id_filter
+     */
+    protected $entity_id_filter;
+
+    /**
      * {@inheritdoc}
      */
     public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
@@ -49,12 +64,13 @@ class ActionLogListBuilder extends EntityListBuilder {
             $container->get('entity.manager')->getStorage($entity_type->id()),
             $container->get('url_generator'),
             $container->get('date.formatter'),
-            $container->get('entity.query')
+            $container->get('entity.query'),
+            $container->get('current_route_match')
         );
     }
 
     /**
-     * Constructs a new ContactListBuilder object.
+     * Constructs a new HistoryListBuilder object.
      *
      * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
      *   The entity type definition.
@@ -68,11 +84,21 @@ class ActionLogListBuilder extends EntityListBuilder {
             EntityStorageInterface $storage,
             UrlGeneratorInterface $url_generator,
             DateFormatterInterface $date_formatter,
-            QueryFactory $entity_query) {
+            QueryFactory $entity_query,
+            RouteMatchInterface $route_match) {
         parent::__construct($entity_type, $storage);
         $this->urlGenerator = $url_generator;
         $this->dateFormatter = $date_formatter;
         $this->entityQuery = $entity_query;
+        $this->routeMatch = $route_match;
+
+        // @TODO: get the entity from params and use it to set a condition on the entity query
+        foreach (RestContentPusher::SUPPORTED_ENTITY_TYPES as $type) {
+            $entity = $this->routeMatch->getParameter($type);
+            if ($entity) {
+                $this->entity_id_filter = $entity->id();
+            }
+        }
     }
 
     /**
@@ -80,6 +106,9 @@ class ActionLogListBuilder extends EntityListBuilder {
      */
     public function load() {
         $entity_query = $this->entityQuery->get('action_log');
+        if ($this->entity_id_filter) {
+            $entity_query->condition('target_entity_id', $this->entity_id_filter);
+        }
         $header = $this->buildHeader();
         $entity_query->pager(50);
         $entity_query->tableSort($header);

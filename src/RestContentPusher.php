@@ -35,6 +35,7 @@ class RestContentPusher implements ContentPusherInterface {
     use StringTranslationTrait;
 
     const REMOTESITE_REQUIRED_MESSAGE = 'Content Direct: Remote Site is not configured.';
+    const SUPPORTED_ENTITY_TYPES = array('node', 'file', 'taxonomy_term');
 
     /**
      * Data fields which should not be added to the request payload.
@@ -153,6 +154,16 @@ class RestContentPusher implements ContentPusherInterface {
     $this->httpClient = $http_client;
     $this->aliasManager = $alias_manager;
   }
+
+    /**
+     * Get the entity types supported by RestContentPusher.
+     *
+     * @return array
+     *   Supported entity type names.
+     */
+    public function getSupportedEntityTypes() {
+        return self::SUPPORTED_ENTITY_TYPES;
+    }
 
     /**
      * Set the Remote Site config entity given the entity.

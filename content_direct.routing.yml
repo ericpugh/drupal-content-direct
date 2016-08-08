@@ -13,7 +13,7 @@ content_direct.action_log:
     _entity_list: 'action_log'
     _title: 'Action Log'
   requirements:
-    _permission: 'administer_content_direct'
+    _permission: 'use_content_direct'
 
 # Configuration Entity Forms.
 entity.remote_site.collection:
@@ -94,4 +94,43 @@ content_direct.file_actions:
     _admin_route: TRUE
     parameters:
       taxonomy_term:
+        type: 'entity:file'
+
+content_direct.node_history:
+  path: '/node/{node}/content_direct/history'
+  defaults:
+    _entity_list: 'action_log'
+    _title: 'Action Log History'
+  requirements:
+    _permission: 'use_content_direct'
+  options:
+    _node_operation_route: TRUE
+    parameters:
+      node:
+        type: 'entity:node'
+
+content_direct.term_history:
+  path: '/taxonomy/term/{taxonomy_term}/content_direct/history'
+  defaults:
+    _entity_list: 'action_log'
+    _title: 'Action Log History'
+  requirements:
+    _permission: 'use_content_direct'
+  options:
+    _admin_route: TRUE
+    parameters:
+      taxonomy_term:
+        type: 'entity:taxonomy_term'
+
+content_direct.file_history:
+  path: '/file/{file}/content_direct/history'
+  defaults:
+    _entity_list: 'action_log'
+    _title: 'Action Log History'
+  requirements:
+    _permission: 'use_content_direct'
+  options:
+    _admin_route: TRUE
+    parameters:
+      file:
         type: 'entity:file'

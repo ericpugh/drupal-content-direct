@@ -15,3 +15,21 @@ content_direct.file_actions:
   route_name: content_direct.file_actions
   base_route: entity.file.canonical
   weight: 100
+
+content_direct.node_history:
+  title: 'History'
+  route_name: content_direct.node_history
+  base_route: entity.node.canonical
+  weight: 100
+
+content_direct.term_history:
+  title: 'History'
+  route_name: content_direct.term_history
+  base_route: entity.taxonomy_term.canonical
+  weight: 100
+
+content_direct.file_history:
+  title: 'History'
+  route_name: content_direct.file_history
+  base_route: entity.file.canonical
+  weight: 100

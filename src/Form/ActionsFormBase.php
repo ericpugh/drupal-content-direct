@@ -144,7 +144,7 @@ class ActionsFormBase extends FormBase {
                 '#title' => $this->t('Configure Remote Sites'),
                 '#type' => 'link',
                 '#url' => Url::fromRoute('entity.remote_site.collection'),
-                '#weight' => 98,
+                '#weight' => 90,
             ];
 
         }
@@ -154,7 +154,7 @@ class ActionsFormBase extends FormBase {
             '#options' => $options,
             '#required' => TRUE,
             '#description' => $remote_site_description,
-            '#weight' => 97,
+            '#weight' => 95,
         ];
         // Add action radios for all Content Direct actions forms.
         $form['content_direct_actions'] = array(
@@ -162,14 +162,14 @@ class ActionsFormBase extends FormBase {
             '#title' => $this->t('Action'),
             '#default_value' => key($this->actions),
             '#options' => $this->actions,
-            '#weight' => 100,
+            '#weight' => 97,
         );
         $form['note'] = [
             '#type' => 'textarea',
             '#title' => $this->t('Note'),
             '#rows' => 2,
             '#cols' => 5,
-            '#weight' => 100,
+            '#weight' => 98,
         ];
         // Submit/Cancel buttons.
         $form['actions']['#type'] = 'actions';
