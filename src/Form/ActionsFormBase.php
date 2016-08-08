@@ -110,7 +110,10 @@ class ActionsFormBase extends FormBase {
         $existing_logs = $query->execute();
         if ($existing_logs) {
             // Update existing action log.
-            ActionLog::load(end($existing_logs))->setChangedTime(time())->save();
+            $log = ActionLog::load(end($existing_logs));
+            $log->setChangedTime(time());
+            $log->set('note', $note);
+            $log->save();
         }
         else {
             // Create a new action log.
