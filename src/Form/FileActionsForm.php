@@ -21,7 +21,7 @@ class FileActionsForm extends ActionsFormBase {
      * {@inheritdoc}
      */
     public function getFormId() {
-        return 'content_direct_term_actions';
+        return 'content_direct_file_actions';
     }
 
     /**
@@ -62,11 +62,11 @@ class FileActionsForm extends ActionsFormBase {
         $request = NULL;
         switch ($selected_action) {
             case 'post':
-                $data = $this->pusher->getFileData($this->file);
+                $data = $this->pusher->getEntityData($this->file);
                 $request = $this->pusher->request('post', 'entity/file', array('body' => $data));
                 break;
             case 'patch':
-                $data = $this->pusher->getFileData($this->file);
+                $data = $this->pusher->getEntityData($this->file);
                 $request = $this->pusher->request('patch', 'file/' . $this->file->id(), array('body' => $data));
                 break;
             case 'delete':

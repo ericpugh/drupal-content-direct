@@ -92,7 +92,7 @@ class ActionLogListBuilder extends EntityListBuilder {
         $this->entityQuery = $entity_query;
         $this->routeMatch = $route_match;
 
-        // @TODO: get the entity from params and use it to set a condition on the entity query
+        // If exists, get the entity from params which can be used to filter entity query.
         foreach (RestContentPusher::SUPPORTED_ENTITY_TYPES as $type) {
             $entity = $this->routeMatch->getParameter($type);
             if ($entity) {
@@ -142,7 +142,8 @@ class ActionLogListBuilder extends EntityListBuilder {
             'field' => 'action',
             'specifier' => 'action',
         ];
-        $header['content'] = $this->t('Content');
+      $header['content_type'] = $this->t('Content Type');
+      $header['content'] = $this->t('Content');
         $header['remote_site'] = $this->t('Remote Site');
         $header['note'] = $this->t('Note');
 
@@ -158,13 +159,16 @@ class ActionLogListBuilder extends EntityListBuilder {
             '#theme' => 'username',
             '#account' => $entity->getOwner(),
         );
-        $row['action'] = $entity->action->value;
+        $row['action'] = strtoupper($entity->action->value);
         $target_entity = entity_load($entity->target_entity_type->value, $entity->target_entity_id->value);
-        $row['content']['data'] = array(
+        if ($target_entity) {
+          $row['content_type'] = $target_entity->getEntityType()->getLabel();
+          $row['content']['data'] = array(
             '#type' => 'link',
             '#url' => $target_entity->toUrl(),
             '#title' => $target_entity->label(),
-        );
+          );
+        }
         $row['remote_site'] = $entity->remote_site->value;
         $row['note'] = $entity->note->value;
 

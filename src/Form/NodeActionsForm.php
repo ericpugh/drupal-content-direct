@@ -77,11 +77,11 @@ class NodeActionsForm extends ActionsFormBase {
         $request = NULL;
         switch ($selected_action) {
             case 'post':
-                $data = $this->pusher->getNodeData($this->node);
+                $data = $this->pusher->getEntityData($this->node);
                 $request = $this->pusher->request('post', 'entity/node', array('body' => $data));
                 break;
             case 'patch':
-                $data = $this->pusher->getNodeData($this->node);
+                $data = $this->pusher->getEntityData($this->node);
                 $request = $this->pusher->request('patch', 'node/' . $this->node->id(), array('body' => $data));
                 break;
             case 'delete':

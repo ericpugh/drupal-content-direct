@@ -10,6 +10,27 @@ resources:
         - hal_json
       supported_auth:
         - basic_auth
+    PATCH:
+      supported_formats:
+        - hal_json
+      supported_auth:
+        - basic_auth
+    DELETE:
+      supported_formats:
+        - hal_json
+      supported_auth:
+        - basic_auth
+  'entity:file':
+    GET:
+      supported_formats:
+        - hal_json
+      supported_auth:
+        - basic_auth
+    POST:
+      supported_formats:
+        - hal_json
+      supported_auth:
+        - basic_auth
     DELETE:
       supported_formats:
         - hal_json
@@ -20,7 +41,7 @@ resources:
         - hal_json
       supported_auth:
         - basic_auth
-  'entity:taxonomy_term':
+  'entity:menu':
     GET:
       supported_formats:
         - hal_json
@@ -62,7 +83,7 @@ resources:
         - hal_json
       supported_auth:
         - basic_auth
-  'entity:file':
+  'entity:taxonomy_term':
     GET:
       supported_formats:
         - hal_json
@@ -83,4 +104,25 @@ resources:
         - hal_json
       supported_auth:
         - basic_auth
-link_domain: remotedomain.dev
+  'entity:menu_link_content':
+    GET:
+      supported_formats:
+        - hal_json
+      supported_auth:
+        - basic_auth
+    POST:
+      supported_formats:
+        - hal_json
+      supported_auth:
+        - basic_auth
+    DELETE:
+      supported_formats:
+        - hal_json
+      supported_auth:
+        - basic_auth
+    PATCH:
+      supported_formats:
+        - hal_json
+      supported_auth:
+        - basic_auth
+link_domain: ''

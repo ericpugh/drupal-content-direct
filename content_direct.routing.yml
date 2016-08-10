@@ -96,6 +96,19 @@ content_direct.file_actions:
       taxonomy_term:
         type: 'entity:file'
 
+content_direct.menu_link_content_actions:
+  path: '/admin/structure/menu/item/{menu_link_content}/content_direct'
+  defaults:
+    _title: 'Content Direct Actions'
+    _form: '\Drupal\content_direct\Form\MenuLinkContentActionsForm'
+  requirements:
+    _permission: 'use_content_direct'
+  options:
+    _admin_route: TRUE
+    parameters:
+      menu_link_content:
+        type: 'entity:menu_link_content'
+
 content_direct.node_history:
   path: '/node/{node}/content_direct/history'
   defaults:
@@ -134,3 +147,16 @@ content_direct.file_history:
     parameters:
       file:
         type: 'entity:file'
+
+content_direct.menu_link_content_history:
+  path: '/admin/structure/menu/item/{menu_link_content}/content_direct/history'
+  defaults:
+    _entity_list: 'action_log'
+    _title: 'Action Log History'
+  requirements:
+    _permission: 'use_content_direct'
+  options:
+    _admin_route: TRUE
+    parameters:
+      menu_link_content:
+        type: 'entity:menu_link_content'

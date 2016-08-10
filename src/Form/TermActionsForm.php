@@ -77,11 +77,11 @@ class TermActionsForm extends ActionsFormBase {
         $request = NULL;
         switch ($selected_action) {
             case 'post':
-                $data = $this->pusher->getTermData($this->taxonomy_term);
+                $data = $this->pusher->getEntityData($this->taxonomy_term);
                 $request = $this->pusher->request('post', 'entity/taxonomy_term', array('body' => $data));
                 break;
             case 'patch':
-                $data = $this->pusher->getTermData($this->taxonomy_term);
+                $data = $this->pusher->getEntityData($this->taxonomy_term);
                 $request = $this->pusher->request('patch', 'taxonomy/term/' . $this->taxonomy_term->id(), array('body' => $data));
                 break;
             case 'delete':

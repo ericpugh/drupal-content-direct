@@ -27,28 +27,39 @@ function content_direct_entity_operation(EntityInterface $entity) {
     $operations = array();
     if (\Drupal::currentUser()->hasPermission('use_content_direct')) {
         $entity_type = $entity->getEntityType()->id();
-        if ($entity_type == 'node') {
-            $operations['content_direct'] = array(
-                'title' => t('Content Direct'),
-                'weight' => 100,
-                'url' => \Drupal\Core\Url::fromRoute("content_direct.node_actions", array(
-                    $entity->getEntityTypeId() => $entity->id(),
-                )),
-            );
-        }
-        elseif ($entity_type == 'file') {
-            $operations['content_direct'] = array(
-                'title' => t('Content Direct'),
-                'weight' => 100,
-                'url' => \Drupal\Core\Url::fromRoute("content_direct.file_actions", array(
-                    $entity->getEntityTypeId() => $entity->id(),
-                )),
-            );
-        }
+        $action_routes = array(
+          'node' => 'content_direct.node_actions',
+          'file' => 'content_direct.file_actions',
+        );
+      // Add one of the action routes if one of the Entities.
+      if (key_exists($entity_type, $action_routes)) {
+        $operations['content_direct'] = array(
+          'title' => t('Content Direct'),
+          'weight' => 100,
+          'url' => \Drupal\Core\Url::fromRoute($action_routes[$entity_type], array(
+            $entity->getEntityTypeId() => $entity->id(),
+          )),
+        );
+      }
+      // Add one of the history routes if one of the Entities.
+      $history_routes = array(
+        'node' => 'content_direct.node_history',
+        'file' => 'content_direct.file_history',
+      );
+      if (key_exists($entity_type, $history_routes)) {
+        $operations['content_direct_history'] = array(
+          'title' => t('History'),
+          'weight' => 100,
+          'url' => \Drupal\Core\Url::fromRoute($history_routes[$entity_type], array(
+            $entity->getEntityTypeId() => $entity->id(),
+          )),
+        );
+      }
 
-        // @TODO: Not able to alter operations for taxonomy terms
+        //TODO: Not able to alter operations on MenuLinkContent either.
+        // @TODO: Not able to alter operations for taxonomy terms.
         // see: Patch expected for 8.2.x https://www.drupal.org/node/2469567
-//        elseif ($entity_type == 'taxonomy_term') {
+//        if ($entity_type == 'taxonomy_term') {
 //            $operations['content_direct'] = array(
 //                'title' => t('Content Direct'),
 //                'weight' => 100,

@@ -10,6 +10,8 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\file_entity\FileEntityInterface;
+use Drupal\menu_link_content\Entity\MenuLinkContent;
+use Drupal\menu_link_content\MenuLinkContentInterface;
 use Drupal\node\NodeInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
@@ -32,10 +34,16 @@ use Drupal\content_direct\Entity\ActionLog;
  */
 class RestContentPusher implements ContentPusherInterface {
 
-    use StringTranslationTrait;
+  use StringTranslationTrait;
 
-    const REMOTESITE_REQUIRED_MESSAGE = 'Content Direct: Remote Site is not configured.';
-    const SUPPORTED_ENTITY_TYPES = array('node', 'file', 'taxonomy_term');
+  const SUPPORTED_ENTITY_TYPES = array('node', 'file', 'taxonomy_term', 'menu_link_content');
+
+  /**
+   * User message stating the RemoteSite as a requirement.
+   *
+   * @var string
+   */
+  public $remoteSiteRequiredMessage = '';
 
     /**
      * Data fields which should not be added to the request payload.
@@ -153,6 +161,7 @@ class RestContentPusher implements ContentPusherInterface {
     $this->serializer = $serializer;
     $this->httpClient = $http_client;
     $this->aliasManager = $alias_manager;
+    $this->remoteSiteRequiredMessage = $this->t('Content Direct: Remote Site is not configured.');
   }
 
     /**
@@ -195,7 +204,13 @@ class RestContentPusher implements ContentPusherInterface {
         return $this;
     }
 
-    public function getRemoteSite() {
+  /**
+   * Get the Remote Site config entity.
+   *
+   * @return \Drupal\content_direct\RemoteSiteInterface
+   *   Return the remote site.
+   */
+  public function getRemoteSite() {
         return $this->remoteSite;
     }
 
@@ -242,49 +257,78 @@ class RestContentPusher implements ContentPusherInterface {
         return FALSE;
     }
 
-    /**
-   * Get request data from a Node object.
+  /**
+   * Get request "body" data from an Entity object.
    *
-   * @param \Drupal\node\NodeInterface $node
-   *   The Node.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The Entity.
    *
    * @return string
    *   Return a json string.
    */
-  public function getNodeData(NodeInterface $node) {
-      if (!isset($this->remoteSite)) {
-          drupal_set_message(self::REMOTESITE_REQUIRED_MESSAGE, 'error');
-          throw new \Exception(self::REMOTESITE_REQUIRED_MESSAGE);
-      }
-      else {
+  public function getEntityData(EntityInterface $entity) {
+    if (!isset($this->remoteSite)) {
+      drupal_set_message($this->remoteSiteRequiredMessage, 'error');
+      throw new \Exception($this->remoteSiteRequiredMessage);
+    }
+    else {
+      $serialized_entity = $this->serializer->serialize($entity, $this->remoteSite->get('format'));
 
-          $serialized_node = $this->serializer->serialize($node, $this->remoteSite->get('format'));
-          $data = json_decode($serialized_node);
-          // Remove fields which might create permissions issues on the remote.
-          foreach ($data as $key => $value) {
-              if (in_array($key, $this->ignoreFields)) {
-                  unset($data->$key);
-              }
-          }
-          // Further clean the data by removing revision_uid from _embedded.
-          if (property_exists($data, '_embedded')) {
-              foreach ($data->_embedded as $key => $value) {
-                  // Test if the key ends with the string.
-                  if (substr_compare($key, 'revision_uid', -12, 12) === 0) {
-                      unset($data->_embedded->$key);
-                  }
-              }
-          }
-          // Manually attach the path alias.
-          $alias = $this->aliasManager->getAliasByPath('/node/' . $node->id());
-          if ($alias) {
-              $data->path = array(
-                  (object)array('alias' => $alias),
-              );
-          }
-          $json = json_encode($data);
-          return $this->replaceHypermediaLinks($json);
+      if ($entity instanceof FileEntityInterface) {
+        // Unset the data property that was set on the file object when serialized.
+        unset($entity->data);
       }
+
+      $data = json_decode($serialized_entity);
+      // Remove fields which might create permissions issues on the remote.
+      foreach ($data as $key => $value) {
+        if (in_array($key, $this->ignoreFields)) {
+          unset($data->$key);
+        }
+      }
+
+      // Further changes specific to an particular Entity Type
+      if ($entity instanceof NodeInterface) {
+        // Further clean the data by removing revision_uid from _embedded.
+        if (property_exists($data, '_embedded')) {
+          foreach ($data->_embedded as $key => $value) {
+            // Test if the key ends with the string.
+            if (substr_compare($key, 'revision_uid', -12, 12) === 0) {
+              unset($data->_embedded->$key);
+            }
+          }
+        }
+        // Manually attach the path alias for a node.
+        $alias = $this->aliasManager->getAliasByPath('/node/' . $entity->id());
+        if ($alias) {
+          $data->path = array(
+            (object)array('alias' => $alias),
+          );
+        }
+      }
+      elseif ($entity instanceof FileEntityInterface) {
+        foreach ($data as $key => $value) {
+          // Remove status property from file entity.
+          if ($key == 'status') {
+            unset($data->$key);
+          }
+        }
+      }
+      elseif ($entity instanceof TermInterface) {
+        // Manually attach the path alias for a Term.
+        $alias = $this->aliasManager->getAliasByPath('/taxonomy/term/' . $entity->id());
+        if ($alias) {
+          $data->path = array(
+            (object)array('alias' => $alias),
+          );
+        }
+
+      }
+      // Encode and return JSON data;
+      $json = json_encode($data);
+      return $this->replaceHypermediaLinks($json);
+
+    }
   }
 
   /**
@@ -302,42 +346,6 @@ class RestContentPusher implements ContentPusherInterface {
   }
 
   /**
-   * Get request data from a File object with Base64 encoded file.
-   *
-   * @param \Drupal\file_entity\FileEntityInterface $file
-   *   The File.
-   *
-   * @return string
-   *   Return a json string.
-   */
-  public function getFileData(FileEntityInterface $file) {
-      if (!isset($this->remoteSite)) {
-          drupal_set_message(self::REMOTESITE_REQUIRED_MESSAGE, 'error');
-          throw new \Exception(self::REMOTESITE_REQUIRED_MESSAGE);
-      }
-      else {
-
-          $serialized_file = $this->serializer->serialize($file, $this->remoteSite->get('format'));
-          // Unset the data property that was set on the file object when serialized.
-          unset($file->data);
-          // Remove fields which might create permissions issues on the remote.
-          $data = json_decode($serialized_file);
-          // Remove fields which might create permissions issues on the remote.
-          foreach ($data as $key => $value) {
-              if (in_array($key, $this->ignoreFields)) {
-                  unset($data->$key);
-              }
-              // Also remove status property from file.
-              if ($key == 'status') {
-                  unset($data->$key);
-              }
-          }
-          $json = json_encode($data);
-          return $this->replaceHypermediaLinks($json);
-      }
-  }
-
-  /**
    * Get taxonomy terms referenced in a Node's fields.
    *
    * @param \Drupal\node\NodeInterface $node
@@ -349,43 +357,6 @@ class RestContentPusher implements ContentPusherInterface {
   public function getTerms(NodeInterface $node) {
     $tids = $this->connection->query('SELECT tid FROM {taxonomy_index} WHERE nid = :nid', array(':nid' => $node->id()))->fetchCol();
     return Term::loadMultiple($tids);
-  }
-
-  /**
-   * Get request data from a Term object.
-   *
-   * @param \Drupal\taxonomy\TermInterface $term
-   *   The Term.
-   *
-   * @return string
-   *   Return a json string.
-   */
-  public function getTermData(TermInterface $term) {
-      if (!isset($this->remoteSite)) {
-          drupal_set_message(self::REMOTESITE_REQUIRED_MESSAGE, 'error');
-          throw new \Exception(self::REMOTESITE_REQUIRED_MESSAGE);
-      }
-      else {
-
-          $serialized_term = $this->serializer->serialize($term, $this->remoteSite->get('format'));
-          $data = json_decode($serialized_term);
-          // Remove fields which might create permissions issues on the remote.
-          foreach ($data as $key => $value) {
-              if (in_array($key, $this->ignoreFields)) {
-                  unset($data->$key);
-              }
-          }
-          // Manually attach the path alias.
-          $alias = $this->aliasManager->getAliasByPath('/taxonomy/term/' . $term->id());
-          if ($alias) {
-              $data->path = array(
-                  (object)array('alias' => $alias),
-              );
-          }
-
-          $json = json_encode($data);
-          return $this->replaceHypermediaLinks($json);
-      }
   }
 
   /**
@@ -455,6 +426,10 @@ class RestContentPusher implements ContentPusherInterface {
         $uri = 'entity/taxonomy_vocabulary/' . $entity_id;
         break;
 
+      case 'menu_link_content':
+        $uri = 'admin/structure/menu/item/' . $entity_id . '/edit';
+        break;
+
       default:
         return FALSE;
     }
@@ -487,8 +462,8 @@ class RestContentPusher implements ContentPusherInterface {
    */
   public function request($method, $uri, $request_options = array()) {
       if (!isset($this->remoteSite)) {
-          drupal_set_message(self::REMOTESITE_REQUIRED_MESSAGE, 'error');
-          throw new \Exception(self::REMOTESITE_REQUIRED_MESSAGE);
+          drupal_set_message($this->remoteSiteRequiredMessage, 'error');
+          throw new \Exception($this->remoteSiteRequiredMessage);
       }
       else {
           $method = strtolower($method);

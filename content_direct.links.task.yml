@@ -16,6 +16,12 @@ content_direct.file_actions:
   base_route: entity.file.canonical
   weight: 100
 
+content_direct.menu_link_content_actions:
+  title: 'Content Direct'
+  route_name: 'content_direct.menu_link_content_actions'
+  base_route: entity.menu_link_content.canonical
+  weight: 100
+
 content_direct.node_history:
   title: 'History'
   route_name: content_direct.node_history
@@ -32,4 +38,10 @@ content_direct.file_history:
   title: 'History'
   route_name: content_direct.file_history
   base_route: entity.file.canonical
+  weight: 100
+
+content_direct.menu_link_content_history:
+  title: 'History'
+  route_name: content_direct.menu_link_content_history
+  base_route: entity.menu_link_content.canonical
   weight: 100
