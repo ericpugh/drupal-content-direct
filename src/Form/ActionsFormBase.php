@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\content_direct\Entity\RemoteSite;
 use Drupal\content_direct\RestContentPusher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\content_direct\Entity\ActionLog;
+use Drupal\content_direct\Entity\HistoryLog;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Url;
 
@@ -87,7 +87,7 @@ class ActionsFormBase extends FormBase {
     }
 
     /**
-     * Create an ActionLog Entity for each request.
+     * Create a HistoryLog Entity for each request.
      *
      * @param string|integer $entity_id
      *   The Entity ID.
@@ -98,25 +98,25 @@ class ActionsFormBase extends FormBase {
      * @param string $action
      *   The action taken.
      *
-     * @return \Drupal\content_direct\Entity\ActionLog
+     * @return \Drupal\content_direct\Entity\HistoryLog
      */
-    public function createActionLog($entity_id, $entity_type, $remote_site_id, $action, $note = NULL) {
+    public function createHistoryLog($entity_id, $entity_type, $remote_site_id, $action, $note = NULL) {
         // Check if
-        $query = \Drupal::entityQuery('action_log')
+        $query = \Drupal::entityQuery('history_log')
             ->condition('target_entity_id', $entity_id)
             ->condition('target_entity_type', $entity_type)
             ->condition('remote_site', $remote_site_id)
             ->condition('action', $action);
         $existing_logs = $query->execute();
         if ($existing_logs) {
-            // Update existing action log.
-            $log = ActionLog::load(end($existing_logs));
+            // Update existing log.
+            $log = HistoryLog::load(end($existing_logs));
             $log->setChangedTime(time());
             $log->set('note', $note);
             $log->save();
         }
         else {
-            // Create a new action log.
+            // Create a new history log.
             $values = array(
                 'target_entity_id' => $entity_id,
                 'target_entity_type' => $entity_type,
@@ -124,7 +124,7 @@ class ActionsFormBase extends FormBase {
                 'action' => $action,
                 'note' => $note,
             );
-            return ActionLog::create($values)->save();
+            return HistoryLog::create($values)->save();
 
         }
     }

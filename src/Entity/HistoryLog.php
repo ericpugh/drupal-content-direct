@@ -2,29 +2,28 @@
 
 namespace Drupal\content_direct\Entity;
 
-use Drupal\content_direct\ActionLogInterface;
+use Drupal\content_direct\HistoryLogInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\user\UserInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 
 /**
- * Defines the Action Log entity.
+ * Defines the History Log entity.
  *
  * @ContentEntityType(
- *   id = "action_log",
- *   label = @Translation("Action Log"),
+ *   id = "history_log",
+ *   label = @Translation("History Log"),
  *   handlers = {
- *     "list_builder" = "Drupal\content_direct\Controller\ActionLogListBuilder",
- *     "access" = "Drupal\content_direct\ActionLogControlHandler",
+ *     "list_builder" = "Drupal\content_direct\Controller\HistoryLogListBuilder",
+ *     "access" = "Drupal\content_direct\HistoryLogControlHandler",
  *     "form" = {
- *       "delete" = "Drupal\content_direct\Form\ActionLogDeleteForm",
+ *       "delete" = "Drupal\content_direct\Form\HistoryLogDeleteForm",
  *     },
  *   },
- *   base_table = "content_direct_action_log",
+ *   base_table = "content_direct_history_log",
  *   admin_permission = "administer_content_direct",
  *   list_cache_contexts = { "user" },
  *   entity_keys = {
@@ -33,11 +32,11 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "delete-form" = "/admin/config/content_direct/action_log/{action_log}/delete",
+ *     "delete-form" = "/admin/config/content_direct/history_log/{history_log}/delete",
  *   }
  * )
  */
-class ActionLog extends ContentEntityBase implements ActionLogInterface {
+class HistoryLog extends ContentEntityBase implements HistoryLogInterface {
 
     use EntityChangedTrait;
 
@@ -106,13 +105,13 @@ class ActionLog extends ContentEntityBase implements ActionLogInterface {
         // Standard field, used as unique if primary index.
         $fields['id'] = BaseFieldDefinition::create('integer')
             ->setLabel(t('ID'))
-            ->setDescription(t('The ID of the Action Log entity.'))
+            ->setDescription(t('The ID of the History Log entity.'))
             ->setReadOnly(TRUE);
 
         // Standard field, unique outside of the scope of the current project.
         $fields['uuid'] = BaseFieldDefinition::create('uuid')
             ->setLabel(t('UUID'))
-            ->setDescription(t('The UUID of the Action Log entity.'))
+            ->setDescription(t('The UUID of the History Log entity.'))
             ->setReadOnly(TRUE);
 
         // User field.

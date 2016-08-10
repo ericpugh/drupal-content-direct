@@ -7,11 +7,11 @@ content_direct.admin_config:
   requirements:
     _permission: 'administer_content_direct'
 
-content_direct.action_log:
-  path: '/admin/config/content_direct/action_log'
+content_direct.history_log:
+  path: '/admin/config/content_direct/history_log'
   defaults:
-    _entity_list: 'action_log'
-    _title: 'Action Log'
+    _entity_list: 'history_log'
+    _title: 'History Log'
   requirements:
     _permission: 'use_content_direct'
 
@@ -48,11 +48,11 @@ entity.remote_site.delete_form:
   requirements:
     _permission: 'administer_content_direct'
 
-entity.action_log.delete_form:
-  path: '/admin/config/content_direct/action_log/{action_log}/delete'
+entity.history_log.delete_form:
+  path: '/admin/config/content_direct/history_log/{history_log}/delete'
   defaults:
-    _entity_form: 'action_log.delete'
-    _title: 'Delete Action Log'
+    _entity_form: 'history_log.delete'
+    _title: 'Delete History Log'
   requirements:
     _permission: 'use_content_direct'
 
@@ -112,8 +112,8 @@ content_direct.menu_link_content_actions:
 content_direct.node_history:
   path: '/node/{node}/content_direct/history'
   defaults:
-    _entity_list: 'action_log'
-    _title: 'Action Log History'
+    _entity_list: 'history_log'
+    _title: 'History Log'
   requirements:
     _permission: 'use_content_direct'
   options:
@@ -125,8 +125,8 @@ content_direct.node_history:
 content_direct.term_history:
   path: '/taxonomy/term/{taxonomy_term}/content_direct/history'
   defaults:
-    _entity_list: 'action_log'
-    _title: 'Action Log History'
+    _entity_list: 'history_log'
+    _title: 'History Log'
   requirements:
     _permission: 'use_content_direct'
   options:
@@ -138,8 +138,8 @@ content_direct.term_history:
 content_direct.file_history:
   path: '/file/{file}/content_direct/history'
   defaults:
-    _entity_list: 'action_log'
-    _title: 'Action Log History'
+    _entity_list: 'history_log'
+    _title: 'History Log'
   requirements:
     _permission: 'use_content_direct'
   options:
@@ -151,8 +151,8 @@ content_direct.file_history:
 content_direct.menu_link_content_history:
   path: '/admin/structure/menu/item/{menu_link_content}/content_direct/history'
   defaults:
-    _entity_list: 'action_log'
-    _title: 'Action Log History'
+    _entity_list: 'history_log'
+    _title: 'History Log'
   requirements:
     _permission: 'use_content_direct'
   options:

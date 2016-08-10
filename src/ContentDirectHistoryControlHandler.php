@@ -8,9 +8,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
- * Access controller for the action log entity.
+ * Access controller for the history entity.
  */
-class ActionLogControlHandler extends EntityAccessControlHandler {
+class ContentDirectControlHandler extends EntityAccessControlHandler {
 
   /**
    * {@inheritdoc}

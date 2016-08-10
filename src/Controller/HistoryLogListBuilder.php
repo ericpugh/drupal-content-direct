@@ -18,7 +18,7 @@ use Drupal\content_direct\RestContentPusher;
  *
  * @ingroup content_direct
  */
-class ActionLogListBuilder extends EntityListBuilder {
+class HistoryLogListBuilder extends EntityListBuilder {
 
     /**
      * The url generator.
@@ -105,7 +105,7 @@ class ActionLogListBuilder extends EntityListBuilder {
      * {@inheritdoc}
      */
     public function load() {
-        $entity_query = $this->entityQuery->get('action_log');
+        $entity_query = $this->entityQuery->get('history_log');
         if ($this->entity_id_filter) {
             $entity_query->condition('target_entity_id', $this->entity_id_filter);
         }

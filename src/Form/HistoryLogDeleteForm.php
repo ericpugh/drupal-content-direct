@@ -7,10 +7,10 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Builds the form to delete an Action Log.
+ * Builds the form to delete an History Log.
  */
 
-class ActionLogDeleteForm extends ContentEntityConfirmFormBase {
+class HistoryLogDeleteForm extends ContentEntityConfirmFormBase {
 
     /**
      * {@inheritdoc}
@@ -23,7 +23,7 @@ class ActionLogDeleteForm extends ContentEntityConfirmFormBase {
      * {@inheritdoc}
      */
     public function getCancelUrl() {
-        return new Url('content_direct.action_log');
+        return new Url('content_direct.history_log');
     }
 
     /**
@@ -39,7 +39,7 @@ class ActionLogDeleteForm extends ContentEntityConfirmFormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $entity = $this->getEntity();
         $entity->delete();
-        drupal_set_message($this->t('Action Log item has been deleted.'));
+        drupal_set_message($this->t('History log item has been deleted.'));
 
         $form_state->setRedirectUrl($this->getCancelUrl());
     }

@@ -7,10 +7,10 @@ use Drupal\user\EntityOwnerInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 
 /**
-* Provides an interface defining a Remote Site entity.
+* Provides an interface defining a HistoryLog entity.
  *
  * @ingroup content_direct
  */
-interface ActionLogInterface extends ContentEntityInterface, EntityOwnerInterface, EntityChangedInterface {
+interface HistoryLogInterface extends ContentEntityInterface, EntityOwnerInterface, EntityChangedInterface {
 
 }

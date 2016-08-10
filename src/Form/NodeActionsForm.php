@@ -89,8 +89,8 @@ class NodeActionsForm extends ActionsFormBase {
                 break;
         }
         if ($request) {
-            // Create an ActionLog Entity to track Content Direct requests made.
-            $this->createActionLog($this->node->id(), 'node', $remote_site_id, $selected_action, $form_state->getValue('note'));
+            // Create an HistoryLog Entity to track Content Direct requests made.
+            $this->createHistoryLog($this->node->id(), 'node', $remote_site_id, $selected_action, $form_state->getValue('note'));
         }
     }
 

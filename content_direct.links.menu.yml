@@ -8,9 +8,9 @@ content_direct.remote_sites_menu_link:
   description: 'Add remote sites for the Content Direct module.'
   route_name: entity.remote_site.collection
   parent: content_direct.admin_config_menu_link
-content_direct.action_log_menu_link:
-  title: 'Action Log'
-  description: 'Content Direct action log.'
-  route_name: content_direct.action_log
+content_direct.history_log_menu_link:
+  title: 'History Log'
+  description: 'Content Direct history log.'
+  route_name: content_direct.history_log
   parent: content_direct.admin_config_menu_link
   weight: 100

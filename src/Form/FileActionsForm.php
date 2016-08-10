@@ -74,8 +74,8 @@ class FileActionsForm extends ActionsFormBase {
                 break;
         }
         if ($request) {
-            // Create an ActionLog Entity to track Content Direct requests made.
-            $this->createActionLog($this->file->id(), 'file', $remote_site_id, $selected_action, $form_state->getValue('note'));
+            // Create an HistoryLog Entity to track Content Direct requests made.
+            $this->createHistoryLog($this->file->id(), 'file', $remote_site_id, $selected_action, $form_state->getValue('note'));
         }
 
     }
