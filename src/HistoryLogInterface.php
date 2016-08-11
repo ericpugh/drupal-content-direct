@@ -7,7 +7,7 @@ use Drupal\user\EntityOwnerInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 
 /**
-* Provides an interface defining a HistoryLog entity.
+ * Provides an interface defining a HistoryLog entity.
  *
  * @ingroup content_direct
  */

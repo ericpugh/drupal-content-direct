@@ -33,98 +33,98 @@ use Drupal\content_direct\RemoteSiteInterface;
  */
 class RemoteSite extends ConfigEntityBase implements RemoteSiteInterface {
 
-    /**
-     * The Remote Site ID (machine name).
-     *
-     * @var string
-     */
-    public $id;
+  /**
+   * The Remote Site ID (machine name).
+   *
+   * @var string
+   */
+  public $id;
 
-    /**
-     * The Remote Site label.
-     *
-     * @var string
-     */
-    public $label;
+  /**
+   * The Remote Site label.
+   *
+   * @var string
+   */
+  public $label;
 
-    /**
-     * The Remote Site HTTP protocol.
-     *
-     * @var string
-     */
-    public $protocol;
+  /**
+   * The Remote Site HTTP protocol.
+   *
+   * @var string
+   */
+  public $protocol;
 
-    /**
-     * The Remote Site host name.
-     *
-     * @var string
-     */
+  /**
+   * The Remote Site host name.
+   *
+   * @var string
+   */
 
-    public $host;
+  public $host;
 
-    /**
-     * The Remote Site port used.
-     *
-     * @var string
-     */
-    public $port;
+  /**
+   * The Remote Site port used.
+   *
+   * @var string
+   */
+  public $port;
 
-    /**
-     * The Remote Site format used.
-     *
-     * @var string
-     */
-    public $format;
+  /**
+   * The Remote Site format used.
+   *
+   * @var string
+   */
+  public $format;
 
-    /**
-     * The Remote Site admin username.
-     *
-     * @var string
-     */
-    protected $username;
+  /**
+   * The Remote Site admin username.
+   *
+   * @var string
+   */
+  protected $username;
 
-    /**
-     * The Remote Site admin password.
-     *
-     * @var string
-     */
-    protected $password;
+  /**
+   * The Remote Site admin password.
+   *
+   * @var string
+   */
+  protected $password;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function id() {
-        return $this->get('id');
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function id() {
+    return $this->get('id');
+  }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getId() {
-        return $this->get('id');
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function getId() {
+    return $this->get('id');
+  }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setId($id) {
-        $this->set('id', $id);
-        return $this;
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function setId($id) {
+    $this->set('id', $id);
+    return $this;
+  }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getLabel() {
-        return $this->get('label');
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function getLabel() {
+    return $this->get('label');
+  }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setLabel($label) {
-        $this->set('label', $label);
-        return $this;
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function setLabel($label) {
+    $this->set('label', $label);
+    return $this;
+  }
 
 }

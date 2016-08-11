@@ -36,7 +36,13 @@ class RestContentPusher implements ContentPusherInterface {
 
   use StringTranslationTrait;
 
-  const SUPPORTED_ENTITY_TYPES = array('node', 'file', 'taxonomy_term', 'menu_link_content');
+  const SUPPORTED_ENTITY_TYPES =
+    array(
+      'node',
+      'file',
+      'taxonomy_term',
+      'menu_link_content',
+    );
 
   /**
    * User message stating the RemoteSite as a requirement.
@@ -45,12 +51,12 @@ class RestContentPusher implements ContentPusherInterface {
    */
   public $remoteSiteRequiredMessage = '';
 
-    /**
-     * Data fields which should not be added to the request payload.
-     *
-     * @var array
-     */
-    public $ignoreFields = array(
+  /**
+   * Data fields which should not be added to the request payload.
+   *
+   * @var array
+   */
+  public $ignoreFields = array(
     'created',
     'changed',
     'revision_timestamp',
@@ -61,14 +67,14 @@ class RestContentPusher implements ContentPusherInterface {
     'path',
   );
 
-    /**
-     * Config Factory Service Object.
-     *
-     * @var \Drupal\Core\Config\ConfigFactoryInterface
-     */
-    protected $configFactory;
+  /**
+   * Config Factory Service Object.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
 
-    /**
+  /**
    * Database Service Object.
    *
    * @var \Drupal\Core\Database\Connection
@@ -144,8 +150,8 @@ class RestContentPusher implements ContentPusherInterface {
    *   The http client.
    */
   public function __construct(
-      ConfigFactoryInterface $config_factory,
-      Connection $connection,
+    ConfigFactoryInterface $config_factory,
+    Connection $connection,
     LoggerChannelFactoryInterface $logger_factory,
     ModuleHandlerInterface $module_handler,
     EventDispatcherInterface $event_dispatcher,
@@ -153,7 +159,7 @@ class RestContentPusher implements ContentPusherInterface {
     ClientInterface $http_client,
     AliasManager $alias_manager
   ) {
-      $this->configFactory = $config_factory;
+    $this->configFactory = $config_factory;
     $this->connection = $connection;
     $this->loggerFactory = $logger_factory;
     $this->moduleHandler = $module_handler;
@@ -164,45 +170,45 @@ class RestContentPusher implements ContentPusherInterface {
     $this->remoteSiteRequiredMessage = $this->t('Content Direct: Remote Site is not configured.');
   }
 
-    /**
-     * Get the entity types supported by RestContentPusher.
-     *
-     * @return array
-     *   Supported entity type names.
-     */
-    public function getSupportedEntityTypes() {
-        return self::SUPPORTED_ENTITY_TYPES;
-    }
+  /**
+   * Get the entity types supported by RestContentPusher.
+   *
+   * @return array
+   *   Supported entity type names.
+   */
+  public function getSupportedEntityTypes() {
+    return self::SUPPORTED_ENTITY_TYPES;
+  }
 
-    /**
-     * Set the Remote Site config entity given the entity.
-     *
-     * @param \Drupal\content_direct\RemoteSiteInterface $remoteSite
-     *   The Entity.
-     *
-     * @return \Drupal\content_direct\RestContentPusher
-     *   Return pusher service after setting the remote site.
-     */
-    public function setRemoteSite(RemoteSiteInterface $remoteSite) {
-        $this->remoteSite = $remoteSite;
-        $this->token = $this->setToken();
-        return $this;
-    }
+  /**
+   * Set the Remote Site config entity given the entity.
+   *
+   * @param \Drupal\content_direct\RemoteSiteInterface $remoteSite
+   *   The Entity.
+   *
+   * @return \Drupal\content_direct\RestContentPusher
+   *   Return pusher service after setting the remote site.
+   */
+  public function setRemoteSite(RemoteSiteInterface $remoteSite) {
+    $this->remoteSite = $remoteSite;
+    $this->token = $this->setToken();
+    return $this;
+  }
 
-    /**
-     * Set the Remote Site config entity given the entity id.
-     *
-     * @param string $name
-     *   The Entity ID.
-     *
-     * @return \Drupal\content_direct\RestContentPusher
-     *   Return pusher service after setting the remote site.
-     */
-    public function setRemoteSiteByName($name) {
-        $this->remoteSite = RemoteSite::load($name);
-        $this->token = $this->setToken();
-        return $this;
-    }
+  /**
+   * Set the Remote Site config entity given the entity id.
+   *
+   * @param string $name
+   *   The Entity ID.
+   *
+   * @return \Drupal\content_direct\RestContentPusher
+   *   Return pusher service after setting the remote site.
+   */
+  public function setRemoteSiteByName($name) {
+    $this->remoteSite = RemoteSite::load($name);
+    $this->token = $this->setToken();
+    return $this;
+  }
 
   /**
    * Get the Remote Site config entity.
@@ -211,51 +217,54 @@ class RestContentPusher implements ContentPusherInterface {
    *   Return the remote site.
    */
   public function getRemoteSite() {
-        return $this->remoteSite;
-    }
+    return $this->remoteSite;
+  }
 
-    /**
-     * Make an HTTP Request to retrieve the remote CSRF token.
-     *
-     * @return string
-     *   Return CSRF token
-     */
-    public function setToken() {
-        $base_uri = $this->remoteSite->get('protocol') . '://' . $this->remoteSite->get('host');
-        $options = array(
-            'base_uri' => $base_uri,
-            'allow_redirects' => TRUE,
-            'timeout' => 5,
-            'connect_timeout' => 5,
-        );
+  /**
+   * Make an HTTP Request to retrieve the remote CSRF token.
+   *
+   * @return string
+   *   Return CSRF token
+   */
+  public function setToken() {
+    $base_uri = $this->remoteSite->get('protocol') . '://' . $this->remoteSite->get('host');
+    $options = array(
+      'base_uri' => $base_uri,
+      'allow_redirects' => TRUE,
+      'timeout' => 5,
+      'connect_timeout' => 5,
+    );
 
-        $token = $this->httpClient->request('get', 'rest/session/token', $options)->getBody();
-        return $token->__toString();
-    }
+    $token = $this->httpClient->request('get', 'rest/session/token', $options)->getBody();
+    return $token->__toString();
+  }
 
-    public function getToken() {
-        return $this->token;
-    }
+  /**
+   * Get the current CSRF token.
+   */
+  public function getToken() {
+    return $this->token;
+  }
 
-    /**
-     * Check if an Entity references other entities via entity reference fields.
-     *
-     * @param \Drupal\Core\Entity\EntityInterface $entity
-     *   The Entity.
-     *
-     * @return bool
-     *   Return true if given Entity references term or file entities .
-     */
-    public function referencesEntities(EntityInterface $entity) {
-        $references = $entity->referencedEntities();
-        foreach ($references as $reference) {
-            $type = $reference->getEntityTypeId();
-            if ($type == 'taxonomy_term' || $type == 'file') {
-                return TRUE;
-            }
-        }
-        return FALSE;
+  /**
+   * Check if an Entity references other entities via entity reference fields.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The Entity.
+   *
+   * @return bool
+   *   Return true if given Entity references term or file entities .
+   */
+  public function referencesEntities(EntityInterface $entity) {
+    $references = $entity->referencedEntities();
+    foreach ($references as $reference) {
+      $type = $reference->getEntityTypeId();
+      if ($type == 'taxonomy_term' || $type == 'file') {
+        return TRUE;
+      }
     }
+    return FALSE;
+  }
 
   /**
    * Get request "body" data from an Entity object.
@@ -272,7 +281,10 @@ class RestContentPusher implements ContentPusherInterface {
       throw new \Exception($this->remoteSiteRequiredMessage);
     }
     else {
-      $serialized_entity = $this->serializer->serialize($entity, $this->remoteSite->get('format'));
+      $serialized_entity = $this->serializer->serialize(
+        $entity,
+        $this->remoteSite->get('format')
+      );
 
       if ($entity instanceof FileEntityInterface) {
         // Unset the data property that was set on the file object when serialized.
@@ -287,7 +299,7 @@ class RestContentPusher implements ContentPusherInterface {
         }
       }
 
-      // Further changes specific to an particular Entity Type
+      // Further changes specific to an particular Entity Type.
       if ($entity instanceof NodeInterface) {
         // Further clean the data by removing revision_uid from _embedded.
         if (property_exists($data, '_embedded')) {
@@ -302,7 +314,7 @@ class RestContentPusher implements ContentPusherInterface {
         $alias = $this->aliasManager->getAliasByPath('/node/' . $entity->id());
         if ($alias) {
           $data->path = array(
-            (object)array('alias' => $alias),
+            (object) array('alias' => $alias),
           );
         }
       }
@@ -319,12 +331,12 @@ class RestContentPusher implements ContentPusherInterface {
         $alias = $this->aliasManager->getAliasByPath('/taxonomy/term/' . $entity->id());
         if ($alias) {
           $data->path = array(
-            (object)array('alias' => $alias),
+            (object) array('alias' => $alias),
           );
         }
 
       }
-      // Encode and return JSON data;
+      // Encode and return JSON data.
       $json = json_encode($data);
       return $this->replaceHypermediaLinks($json);
 
@@ -402,7 +414,7 @@ class RestContentPusher implements ContentPusherInterface {
    *   The Entity exists
    */
   public function remoteEntityExists($entity_type, $entity_id) {
-    /* @TODO: Fix problem to be updated in core 8.2 with GET request to /taxonomy/term/X?_format=json
+    /* @TODO: Fix with GET request problem to be updated in core 8.2!
      * see the 8.2 fix in https://www.drupal.org/node/2730497
      * Temporary solution is to disable the default Taxonomy Term view on remote.
      */
@@ -422,7 +434,7 @@ class RestContentPusher implements ContentPusherInterface {
         break;
 
       case 'taxonomy_vocabulary':
-        // Note: taxonomy_vocabulary uses a machine name rather than numeric id for $entity_id.
+        // Note: taxonomy_vocabulary uses a machine name rather than numeric id.
         $uri = 'entity/taxonomy_vocabulary/' . $entity_id;
         break;
 
@@ -461,74 +473,75 @@ class RestContentPusher implements ContentPusherInterface {
    * @throws GuzzleException
    */
   public function request($method, $uri, $request_options = array()) {
-      if (!isset($this->remoteSite)) {
-          drupal_set_message($this->remoteSiteRequiredMessage, 'error');
-          throw new \Exception($this->remoteSiteRequiredMessage);
+    if (!isset($this->remoteSite)) {
+      drupal_set_message($this->remoteSiteRequiredMessage, 'error');
+      throw new \Exception($this->remoteSiteRequiredMessage);
+    }
+    else {
+      $method = strtolower($method);
+      $format = $this->remoteSite->get('format');
+      $header_format = 'application/' . str_replace('_', '+', $format);
+      $url_parts = array(
+        'scheme' => $this->remoteSite->get('protocol'),
+        'host' => $this->remoteSite->get('host'),
+        'path' => $uri,
+        'port' => $this->remoteSite->get('port') ? $this->remoteSite->get('port') : '80',
+      );
+      $options = array(
+        'base_uri' => $url_parts['scheme'] . '://' . $url_parts['host'] . ':' . $url_parts['port'],
+        'timeout' => 5,
+        'connect_timeout' => 5,
+        'auth' => array(
+          $this->remoteSite->get('username'),
+          $this->remoteSite->get('password'),
+        ),
+        'headers' => array(
+          'Content-Type' => $header_format,
+          'Accept' => $header_format,
+          'X-CSRF-Token' => $this->token,
+        ),
+      );
+      if (!empty($request_options)) {
+        $options = array_merge($options, $request_options);
       }
-      else {
-          $method = strtolower($method);
-          $format = $this->remoteSite->get('format');
-          $header_format = 'application/' . str_replace('_', '+', $format);
-          $url_parts = array(
-              'scheme' => $this->remoteSite->get('protocol'),
-              'host' => $this->remoteSite->get('host'),
-              'path' => $uri,
-              'port' => $this->remoteSite->get('port') ? $this->remoteSite->get('port') : '80',
-          );
-          $options = array(
-              'base_uri' => $url_parts['scheme'] . '://' . $url_parts['host'] . ':' . $url_parts['port'],
-              'timeout' => 5,
-              'connect_timeout' => 5,
-              'auth' => array(
-                  $this->remoteSite->get('username'),
-                  $this->remoteSite->get('password'),
-              ),
-              'headers' => array(
-                  'Content-Type' => $header_format,
-                  'Accept' => $header_format,
-                  'X-CSRF-Token' => $this->token,
-              ),
-          );
-          if (!empty($request_options)) {
-              $options = array_merge($options, $request_options);
-          }
-          try {
-              $uri = $url_parts['path'] . '?_format=' . $format;
-              $response = $this->httpClient->request($method, $uri, $options);
-              // Log and output message for all Create, Update, and Delete requests.
-              if ($method != 'get' && $method != 'head') {
-                  $status_code = $response->getStatusCode();
-                  // Output the response message to user
-                  drupal_set_message($this->t('Content Direct: %method request sent to <i>%uri</i>. Response: %status, %phrase',
-                      array(
-                          '%method' => strtoupper($method),
-                          '%uri' => $uri,
-                          '%status' => $status_code,
-                          '%phrase' => $response->getReasonPhrase(),
-                      )
-                  ), 'status');
-                  $this->loggerFactory->get('content_direct')
-                      ->notice('Request via %method request to %uri with options: %options. Got a %response_code response.',
-                          array(
-                              '%method' => $method,
-                              '%uri' => $uri,
-                              '%options' => '<pre>' . Html::escape(print_r($options, TRUE)) . '</pre>',
-                              '%response_code' => $status_code,
-                          ));
-              }
-              return $response;
-          } catch (RequestException $exception) {
-              $this->loggerFactory->get('content_pusher')
-                  ->error('Content Direct Error, Code: %code, Message: %message, Body: %body',
-                      array(
-                          '%code' => $exception->getCode(),
-                          '%message' => $exception->getMessage(),
-                          '%body' => '<pre>' . Html::escape($exception->getResponse()->getBody()->getContents()) . '</pre>',
-                      ));
-              drupal_set_message($this->t('Content Direct: %method request failed.', array('%method' => strtoupper($method))), 'error');
-              return $exception->getResponse();
-          }
+      try {
+        $uri = $url_parts['path'] . '?_format=' . $format;
+        $response = $this->httpClient->request($method, $uri, $options);
+        // Log and output message for all Create, Update, and Delete requests.
+        if ($method != 'get' && $method != 'head') {
+          $status_code = $response->getStatusCode();
+          // Output the response message to user.
+          drupal_set_message($this->t('Content Direct: %method request sent to <i>%uri</i>. Response: %status, %phrase',
+            array(
+              '%method' => strtoupper($method),
+              '%uri' => $uri,
+              '%status' => $status_code,
+              '%phrase' => $response->getReasonPhrase(),
+            )
+          ), 'status');
+          $this->loggerFactory->get('content_direct')
+            ->notice('Request via %method request to %uri with options: %options. Got a %response_code response.',
+              array(
+                '%method' => $method,
+                '%uri' => $uri,
+                '%options' => '<pre>' . Html::escape(print_r($options, TRUE)) . '</pre>',
+                '%response_code' => $status_code,
+              ));
+        }
+        return $response;
       }
+      catch (RequestException $exception) {
+        $this->loggerFactory->get('content_pusher')
+          ->error('Content Direct Error, Code: %code, Message: %message, Body: %body',
+            array(
+              '%code' => $exception->getCode(),
+              '%message' => $exception->getMessage(),
+              '%body' => '<pre>' . Html::escape($exception->getResponse()->getBody()->getContents()) . '</pre>',
+            ));
+        drupal_set_message($this->t('Content Direct: %method request failed.', array('%method' => strtoupper($method))), 'error');
+        return $exception->getResponse();
+      }
+    }
   }
 
 }
