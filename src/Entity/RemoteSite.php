@@ -127,4 +127,19 @@ class RemoteSite extends ConfigEntityBase implements RemoteSiteInterface {
     return $this;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getHost() {
+    return $this->get('host');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setHost($host) {
+    $this->set('host', $host);
+    return $this;
+  }
+
 }

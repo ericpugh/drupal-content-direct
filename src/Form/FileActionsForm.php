@@ -36,11 +36,8 @@ class FileActionsForm extends ActionsFormBase {
       '#markup' => $this->t('Perform Content Direct action on File: <i>%name</i>?',
         array('%name' => $this->file->getFilename())),
     );
-    $form['nid'] = array(
-      '#type' => 'hidden',
-      '#name' => 'fid',
-      '#value' => $this->file->id(),
-    );
+    $form['entity_type']['#value'] = $this->file->getEntityTypeId();
+    $form['entity_id']['#value'] = $this->file->id();
 
     return $form;
   }

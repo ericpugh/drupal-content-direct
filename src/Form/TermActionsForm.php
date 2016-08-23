@@ -36,11 +36,8 @@ class TermActionsForm extends ActionsFormBase {
       '#markup' => $this->t('Perform Content Direct action on Term: %name ?',
         array('%name' => $this->taxonomyTerm->getName())),
     );
-    $form['nid'] = array(
-      '#type' => 'hidden',
-      '#name' => 'tid',
-      '#value' => $this->taxonomyTerm->id(),
-    );
+    $form['entity_type']['#value'] = $this->taxonomyTerm->getEntityTypeId();
+    $form['entity_id']['#value'] = $this->taxonomyTerm->id();
 
     return $form;
   }
@@ -55,7 +52,7 @@ class TermActionsForm extends ActionsFormBase {
     $vid = $this->taxonomyTerm->getVocabularyId();
     if (!$this->pusher->remoteEntityExists('taxonomy_vocabulary', $vid)) {
       $form_state->setErrorByName(
-        'tid',
+        'entity_id',
         $this->t('Vocabulary <i>%vid</i> does not exist on the remote site, <i>%term</i> cannot be created.',
           array(
             '%vid' => $vid,

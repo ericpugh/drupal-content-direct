@@ -30,6 +30,10 @@ class NodeActionsForm extends ActionsFormBase {
   public function buildForm(array $form, FormStateInterface $form_state, NodeInterface $node = NULL) {
     $this->node = $node;
     $form = parent::buildForm($form, $form_state);
+    //if ($this->pusher->remoteEntityExists('node', $this->node->id())) {
+      // Output a link to the remote entity.
+      //dpm($this->pusher->getRemoteUri('node', $this->node->id(), TRUE));
+    //}
     $form['item'] = array(
       '#type' => 'item',
       '#input' => FALSE,
@@ -40,11 +44,9 @@ class NodeActionsForm extends ActionsFormBase {
         )
       ),
     );
-    $form['nid'] = array(
-      '#type' => 'hidden',
-      '#name' => 'nid',
-      '#value' => $this->node->id(),
-    );
+    $form['entity_type']['#value'] = $this->node->getEntityTypeId();
+    $form['entity_id']['#value'] = $this->node->id();
+
     if ($this->pusher->referencesEntities($this->node)) {
       drupal_set_message($this->t('Notice: This Node contains references to other entities like
                 <em>Taxonomy Terms</em> or <em>Files</em>, which <strong>may</strong> need to be created on the 
@@ -59,9 +61,9 @@ class NodeActionsForm extends ActionsFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // Verify that the given Node has been published.
     if (!$this->node->isPublished()) {
-      $form_state->setErrorByName('nid', $this->t('<i>node/%nid</i> must be published before using Content Direct.',
+      $form_state->setErrorByName('entity_id', $this->t('<i>node/%nid</i> must be published before using Content Direct.',
         array(
-          '%nid' => $form_state->getValue('nid'),
+          '%nid' => $form_state->getValue('entity_id'),
         )
       ));
     }

@@ -49,4 +49,23 @@ interface RemoteSiteInterface extends ConfigEntityInterface {
    */
   public function setLabel($label);
 
+  /**
+   * Returns the Remote Site hostname.
+   *
+   * @return string
+   *   The hostname of the remote site.
+   */
+  public function getHost();
+
+  /**
+   * Sets the Remote Site hostname.
+   *
+   * @param string $host
+   *   The hostname of the remote site.
+   *
+   * @return \Drupal\content_direct\RemoteSiteInterface
+   *   The class instance this method is called on.
+   */
+  public function setHost($host);
+
 }

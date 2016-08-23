@@ -418,7 +418,30 @@ class RestContentPusher implements ContentPusherInterface {
      * see the 8.2 fix in https://www.drupal.org/node/2730497
      * Temporary solution is to disable the default Taxonomy Term view on remote.
      */
+    $uri = $this->getRemoteUri($entity_type, $entity_id);
+    // @TODO: Change this to a head request. See: https://www.drupal.org/node/2752325
+    if ($this->request('get', $uri)->getStatusCode() === 200) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
 
+  /**
+   * Get the Remote Entity URI.
+   *
+   * @param string $entity_type
+   *   The Entity type.
+   * @param string $entity_id
+   *   The Entity id.
+   * @param bool $hostname
+   *   Whether to include hostname and protocol.
+   *
+   * @return string
+   *   The remote entity uri
+   */
+  public function getRemoteUri($entity_type, $entity_id, $hostname = FALSE) {
     // Get the Request URI based on current Entity type.
     switch (strtolower($entity_type)) {
       case 'node':
@@ -445,13 +468,19 @@ class RestContentPusher implements ContentPusherInterface {
       default:
         return FALSE;
     }
-    // @TODO: Change this to a head request. See: https://www.drupal.org/node/2752325
-    if ($this->request('get', $uri)->getStatusCode() === 200) {
-      return TRUE;
+
+    if ($hostname) {
+      return sprintf('%s://%s:%s/%s',
+        $this->remoteSite->get('protocol'),
+        $this->remoteSite->get('host'),
+        $this->remoteSite->get('port'),
+        $uri
+      );
     }
     else {
-      return FALSE;
+      return $uri;
     }
+
   }
 
   /**

@@ -40,11 +40,9 @@ class MenuLinkContentActionsForm extends ActionsFormBase {
         )
       ),
     );
-    $form['id'] = array(
-      '#type' => 'hidden',
-      '#name' => 'id',
-      '#value' => $this->menuLinkContent->id(),
-    );
+    $form['entity_type']['#value'] = $this->menuLinkContent->getEntityTypeId();
+    $form['entity_id']['#value'] = $this->menuLinkContent->id();
+
     return $form;
   }
 

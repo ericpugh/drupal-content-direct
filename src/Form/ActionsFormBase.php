@@ -11,6 +11,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\content_direct\Entity\HistoryLog;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Url;
+use Drupal\Core\Link;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\HtmlCommand;
+
+
 
 /**
  * Provides a form for executing Content Direct actions.
@@ -149,8 +154,8 @@ class ActionsFormBase extends FormBase {
         '#url' => Url::fromRoute('entity.remote_site.collection'),
         '#weight' => 90,
       ];
-
     }
+
     $form['remote_site'] = [
       '#type' => 'select',
       '#title' => $this->t('Remote Site'),
@@ -158,6 +163,16 @@ class ActionsFormBase extends FormBase {
       '#required' => TRUE,
       '#description' => $remote_site_description,
       '#weight' => 95,
+      '#ajax' => array(
+        'callback' => array($this, 'remoteSiteSelection'),
+        'wrapper' => 'edit-remote-site--description',
+        'method' => 'html',
+        'progress' => array(
+          'type' => 'throbber',
+          'message' => "Setting remote site",
+        ),
+      ),
+
     ];
     // Add action radios for all Content Direct actions forms.
     $form['content_direct_actions'] = array(
@@ -174,6 +189,17 @@ class ActionsFormBase extends FormBase {
       '#cols' => 5,
       '#weight' => 98,
     ];
+    // Hidden fields contain the current entity type and ID.
+    // Values can be set on forms extending $this
+    $form['entity_type'] = array(
+      '#type' => 'hidden',
+      '#name' => 'entity_type',
+    );
+    $form['entity_id'] = array(
+      '#type' => 'hidden',
+      '#name' => 'entity_id',
+    );
+
     // Submit/Cancel buttons.
     $form['actions']['#type'] = 'actions';
     $form['actions']['submit'] = array(
@@ -189,6 +215,44 @@ class ActionsFormBase extends FormBase {
     );
 
     return $form;
+  }
+
+  /**
+   * Ajax submission handler when a remote site is selected.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public function remoteSiteSelection(array $form, FormStateInterface $form_state) {
+    $description = $form['remote_site']['#description'];
+    if ($site = $form_state->getValue('remote_site')) {
+      $this->pusher->setRemoteSiteByName($site);
+      $entity_type = $form_state->getValue('entity_type');
+      $entity_id = $form_state->getValue('entity_id');
+      if ($entity_type && $entity_id) {
+        if ($this->pusher->remoteEntityExists($entity_type, $entity_id)) {
+          // Replace the Remote Site description with a link to the remote entity
+          $text = $this->t('View the remote entity on <i>%site</i>', array('%site' => $site));
+          $url = Url::fromUri(
+            $this->pusher->getRemoteUri($entity_type, $entity_id, TRUE),
+            $options = array(
+              'attributes' => array(
+                'target' => '_blank',
+                'class' => 'external',
+              )
+            )
+          );
+          $link = Link::fromTextAndUrl($text, $url);
+          $description = $form['remote_entity_messages'] = [
+            '#type' => 'status_messages',
+            '#markup' => $link->toString(),
+          ];
+          return $description;
+        }
+      }
+    }
   }
 
   /**
