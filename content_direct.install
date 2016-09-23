@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the content_direct module.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function content_direct_requirements($phase) {
+
+  $requirements = array();
+  if ($phase === 'install') {
+    $minor_version_requirement = '8.2';
+    if (substr(\Drupal::VERSION, 0, $minor_version_requirement) < $minor_version_requirement) {
+      $requirements['drupal_minor_version'] = array(
+        'title' => t('Drupal Minor Version'),
+        'value' => \Drupal::VERSION,
+        'description' => t('Content Direct requires a Drupal core minor version of at least than %minor', array(
+            '%minor' => $minor_version_requirement,
+          )
+        ),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+
+}
