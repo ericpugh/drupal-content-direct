@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - hal
+id: entity.taxonomy_term
+plugin_id: 'entity:taxonomy_term'
+granularity: resource
+configuration:
+  methods:
+    - GET
+    - POST
+    - PATCH
+    - DELETE
+  formats:
+    - hal_json
+  authentication:
+    - basic_auth

@@ -10,11 +10,12 @@ Installation
 -----------
 1. Place the drupal-content-direct directory in your modules directory of the "pushing" site.
 2. Enable the content_direct module at admin/modules.
-3. Configure the module at /admin/config/content_direct
+3. Configure Remote Sites at /admin/config/content_direct/remote_site
+4. Perform content push on an entity's "Content Direct Actions" form. i.e. /node/1/content_direct
 
 > **Important**: Content Direct expects the remote site to be configured identically to the authoring site, including
 matching fields and configuration. In addition, the remote site's REST settings must also be configured to allow 
-Content Direct to perform CRUD actions. An example example.rest.settings.yml file has been provided. Currently, 
+Content Direct to perform CRUD actions. Example rest.resource.*.yml config files been provided in /examples. Currently, 
 Content Direct only supports Basic Auth with the HAL+JSON format, although other authentication methods and format
 may be added.
 

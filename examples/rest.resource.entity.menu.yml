@@ -1,0 +1,16 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - hal
+id: entity.menu
+plugin_id: 'entity:menu'
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - hal_json
+  authentication:
+    - basic_auth
