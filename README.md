@@ -6,6 +6,10 @@ A Drupal 8 module that pushes content from one site to another using RESTful
 web services in Drupal 8 core. The module provides a "Content Direct" tab on Node, Taxonomy Term, and File entities and 
 allows an individual entities to be pushed to a configured remote Drupal 8 site.
 
+Dependencies
+-----------
+* The [File Entity](https://www.drupal.org/project/file_entity) module 
+
 Installation
 -----------
 1. Place the drupal-content-direct directory in your modules directory of the "pushing" site.

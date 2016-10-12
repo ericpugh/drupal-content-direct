@@ -414,13 +414,8 @@ class RestContentPusher implements ContentPusherInterface {
    *   The Entity exists
    */
   public function remoteEntityExists($entity_type, $entity_id) {
-    /* @TODO: Fix with GET request problem to be updated in core 8.2!
-     * see the 8.2 fix in https://www.drupal.org/node/2730497
-     * Temporary solution is to disable the default Taxonomy Term view on remote.
-     */
     $uri = $this->getRemoteUri($entity_type, $entity_id);
-    // @TODO: Change this to a head request. See: https://www.drupal.org/node/2752325
-    if ($this->request('get', $uri)->getStatusCode() === 200) {
+    if ($this->request('head', $uri)->getStatusCode() === 200) {
       return TRUE;
     }
     else {
